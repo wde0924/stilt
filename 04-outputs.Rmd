@@ -1,0 +1,55 @@
+# Outputs {#outputs}
+
+The `out/` directory contains model parameters and outputs in subdirectories organized by receptor timing and locations. The directories are named with the convention `#_yyyymmddHH_long_lati_zagl` where
+
+Abbreviation   | Value
+---------------|----------------------------------
+`#`           | Receptor index
+`yyyy`         | Year (start)
+`mm`           | Month (start)
+`dd`           | Day (start)
+`HH`           | Hour (start)
+`lati`         | Receptor latitude (deg)
+`long`         | Receptor longitude (deg)
+`zagl`         | Receptor height above ground (m)
+
+These directories also contain symbolic links to the files in `exe/` including the `hymodelc` executable. When the model runs trajectory simulations, diagnostic information (`hymodelc.out`) and model output (`FOOTPRINT.nc`, `STILT_OUTPUT.rds`) are also stored here.
+
+
+## FOOTPRINT.nc
+
+Footprint matrices are written to `FOOTPRINT.nc` with `raster::writeRaster()`. The areal extent of these footprints is trimmed to only contain the grid containing particle locations to help reduce file size. The bounds of the grid are included in the netcdf metadata but the extent of footprints will likely differ.
+
+
+## STILT_OUTPUT.rds
+
+Serialized R data file that contains a list of the particle trajectories and the footprint raster. This allows regridding of the footprints without recalculating particle trajectories. Load into R with `out <- readRDS('STILT_OUTPUT.rds')`.
+
+This object is structured as
+
+```
+List of 5
+ $ runtime  : POSIXct[1:1], format: "2015-06-16"
+ $ file     : chr "stilt_wd/out/1_2015061600_-111.847672_40.766189_10/STILT_OUTPUT.rds"
+ $ receptor :'data.frame':	1 obs. of  4 variables:
+  ..$ run_time : POSIXct[1:1], format: "2015-06-16"
+  ..$ lati     : num 40.8
+  ..$ long     : num -112
+  ..$ zagl     : num 10
+ $ footprint:List of 4
+  ..$ file      : chr "stilt_wd/out/1_2015061600_-111.847672_40.766189_10/FOOTPRINT.nc"
+  ..$ data      : Formal class 'RasterLayer' [package "raster"] with 12 slots
+  .. ...
+  ..$ resolution:List of 2
+  .. ..$ x: num 0.002
+  .. ..$ y: num 0.002
+  ..$ domain    :List of 2
+  .. ..$ long: num [1:2] -124 -112
+  .. ..$ lati: num [1:2] 34.3 40.8
+ $ particle :'data.frame':	n obs. of  29 variables:
+  .. ...
+```
+
+Particle trajectory data is stored in a data frame with columns corresponding with varsiwant and can be accessed with `out$particle`. The footprint raster can be accessed with `out$footprint`. For more information about raster manipulation, the [Raster R package](https://geoscripting-wur.github.io/IntroToRaster/) is a good place to start.
+
+

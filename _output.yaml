@@ -1,0 +1,6 @@
+bookdown::gitbook:
+  config:
+    toc:
+      collapse: section
+      before: |
+        <li><strong><a href="./">STILT Documentation</a></strong></li>

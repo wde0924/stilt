@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>STILT Documentation</title>
+  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+  <meta name="description" content="A users guide for the STILT model.">
+  <meta name="generator" content="bookdown 0.3 and GitBook 2.6.7">
+
+  <meta property="og:title" content="STILT Documentation" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="A users guide for the STILT model." />
+  <meta name="github-repo" content="benfasoli/stilt" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="STILT Documentation" />
+  
+  <meta name="twitter:description" content="A users guide for the STILT model." />
+  
+
+<meta name="author" content="Ben Fasoli">
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  
+  
+
+<link rel="next" href="installation.html">
+
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+</head>
+
+<body>
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><strong><a href="./">STILT Documentation</a></strong></li>
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a><ul>
+<li class="chapter" data-level="1.1" data-path="index.html"><a href="index.html#quickstart"><i class="fa fa-check"></i><b>1.1</b> Quick-start</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="installation.html"><a href="installation.html"><i class="fa fa-check"></i><b>2</b> Installation</a><ul>
+<li class="chapter" data-level="2.1" data-path="installation.html"><a href="installation.html#dependencies"><i class="fa fa-check"></i><b>2.1</b> Software dependencies</a></li>
+<li class="chapter" data-level="2.2" data-path="installation.html"><a href="installation.html#install-methods"><i class="fa fa-check"></i><b>2.2</b> Install methods</a><ul>
+<li class="chapter" data-level="2.2.1" data-path="installation.html"><a href="installation.html#r-preferred"><i class="fa fa-check"></i><b>2.2.1</b> R (preferred)</a></li>
+<li class="chapter" data-level="2.2.2" data-path="installation.html"><a href="installation.html#manual"><i class="fa fa-check"></i><b>2.2.2</b> Manual</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="structure.html"><a href="structure.html"><i class="fa fa-check"></i><b>3</b> Repository structure</a><ul>
+<li class="chapter" data-level="3.1" data-path="structure.html"><a href="structure.html#exe"><i class="fa fa-check"></i><b>3.1</b> exe/</a></li>
+<li class="chapter" data-level="3.2" data-path="structure.html"><a href="structure.html#fortran"><i class="fa fa-check"></i><b>3.2</b> fortran/</a></li>
+<li class="chapter" data-level="3.3" data-path="structure.html"><a href="structure.html#out"><i class="fa fa-check"></i><b>3.3</b> out/</a></li>
+<li class="chapter" data-level="3.4" data-path="structure.html"><a href="structure.html#r"><i class="fa fa-check"></i><b>3.4</b> r/</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="workflow.html"><a href="workflow.html"><i class="fa fa-check"></i><b>4</b> Workflow &amp; run_stilt.r</a><ul>
+<li class="chapter" data-level="4.1" data-path="workflow.html"><a href="workflow.html#computational-arguments"><i class="fa fa-check"></i><b>4.1</b> Computational arguments</a></li>
+<li class="chapter" data-level="4.2" data-path="workflow.html"><a href="workflow.html#simulation-timing"><i class="fa fa-check"></i><b>4.2</b> Simulation timing</a></li>
+<li class="chapter" data-level="4.3" data-path="workflow.html"><a href="workflow.html#receptor-locations"><i class="fa fa-check"></i><b>4.3</b> Receptor locations</a></li>
+<li class="chapter" data-level="4.4" data-path="workflow.html"><a href="workflow.html#meteorological-data-input"><i class="fa fa-check"></i><b>4.4</b> Meteorological data input</a></li>
+<li class="chapter" data-level="4.5" data-path="workflow.html"><a href="workflow.html#model-control"><i class="fa fa-check"></i><b>4.5</b> Model control</a></li>
+<li class="chapter" data-level="4.6" data-path="workflow.html"><a href="workflow.html#transport-and-dispersion"><i class="fa fa-check"></i><b>4.6</b> Transport and dispersion</a></li>
+<li class="chapter" data-level="4.7" data-path="workflow.html"><a href="workflow.html#transport-and-dispersion-1"><i class="fa fa-check"></i><b>4.7</b> Transport and dispersion</a></li>
+<li class="chapter" data-level="4.8" data-path="workflow.html"><a href="workflow.html#functionality"><i class="fa fa-check"></i><b>4.8</b> Functionality</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="outputs.html"><a href="outputs.html"><i class="fa fa-check"></i><b>5</b> Outputs</a><ul>
+<li class="chapter" data-level="5.1" data-path="outputs.html"><a href="outputs.html#footprint.nc"><i class="fa fa-check"></i><b>5.1</b> FOOTPRINT.nc</a></li>
+<li class="chapter" data-level="5.2" data-path="outputs.html"><a href="outputs.html#stilt_output.rds"><i class="fa fa-check"></i><b>5.2</b> STILT_OUTPUT.rds</a></li>
+</ul></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">STILT Documentation</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="header">
+<h1 class="title">STILT Documentation</h1>
+<h4 class="author"><em>Ben Fasoli</em></h4>
+</div>
+<div id="introduction" class="section level1">
+<h1><span class="header-section-number">1</span> Introduction</h1>
+<p>This documentation is for for a version of the Stochastic Time Inverted Lagrangian Transport (STILT) model, available on <a href="https://github.com/benfasoli/stilt/">Github</a>.</p>
+<div id="quickstart" class="section level2">
+<h2><span class="header-section-number">1.1</span> Quick-start</h2>
+<p>Done this before and just looking to start a new project?</p>
+<ol style="list-style-type: decimal">
+<li>Initialize myproject with <code>Rscript -e &quot;uataq::stilt_init('myproject')&quot;</code></li>
+<li>Edit <code>r/run_stilt.r</code> to set receptor timing/locations and model parameters</li>
+<li>Run the model with <code>Rscript r/run_stilt.r</code></li>
+</ol>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+
+<a href="installation.html" class="navigation navigation-next navigation-unique" aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"google": false,
+"weibo": false,
+"instapper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"download": null,
+"toc": {
+"collapse": "section"
+}
+});
+});
+</script>
+
+</body>
+
+</html>

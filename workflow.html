@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>STILT Documentation</title>
+  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+  <meta name="description" content="A users guide for the STILT model.">
+  <meta name="generator" content="bookdown 0.3 and GitBook 2.6.7">
+
+  <meta property="og:title" content="STILT Documentation" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="A users guide for the STILT model." />
+  <meta name="github-repo" content="benfasoli/stilt" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="STILT Documentation" />
+  
+  <meta name="twitter:description" content="A users guide for the STILT model." />
+  
+
+<meta name="author" content="Ben Fasoli">
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  
+  
+<link rel="prev" href="structure.html">
+<link rel="next" href="outputs.html">
+
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+</head>
+
+<body>
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><strong><a href="./">STILT Documentation</a></strong></li>
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a><ul>
+<li class="chapter" data-level="1.1" data-path="index.html"><a href="index.html#quickstart"><i class="fa fa-check"></i><b>1.1</b> Quick-start</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="installation.html"><a href="installation.html"><i class="fa fa-check"></i><b>2</b> Installation</a><ul>
+<li class="chapter" data-level="2.1" data-path="installation.html"><a href="installation.html#dependencies"><i class="fa fa-check"></i><b>2.1</b> Software dependencies</a></li>
+<li class="chapter" data-level="2.2" data-path="installation.html"><a href="installation.html#install-methods"><i class="fa fa-check"></i><b>2.2</b> Install methods</a><ul>
+<li class="chapter" data-level="2.2.1" data-path="installation.html"><a href="installation.html#r-preferred"><i class="fa fa-check"></i><b>2.2.1</b> R (preferred)</a></li>
+<li class="chapter" data-level="2.2.2" data-path="installation.html"><a href="installation.html#manual"><i class="fa fa-check"></i><b>2.2.2</b> Manual</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="structure.html"><a href="structure.html"><i class="fa fa-check"></i><b>3</b> Repository structure</a><ul>
+<li class="chapter" data-level="3.1" data-path="structure.html"><a href="structure.html#exe"><i class="fa fa-check"></i><b>3.1</b> exe/</a></li>
+<li class="chapter" data-level="3.2" data-path="structure.html"><a href="structure.html#fortran"><i class="fa fa-check"></i><b>3.2</b> fortran/</a></li>
+<li class="chapter" data-level="3.3" data-path="structure.html"><a href="structure.html#out"><i class="fa fa-check"></i><b>3.3</b> out/</a></li>
+<li class="chapter" data-level="3.4" data-path="structure.html"><a href="structure.html#r"><i class="fa fa-check"></i><b>3.4</b> r/</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="workflow.html"><a href="workflow.html"><i class="fa fa-check"></i><b>4</b> Workflow &amp; run_stilt.r</a><ul>
+<li class="chapter" data-level="4.1" data-path="workflow.html"><a href="workflow.html#computational-arguments"><i class="fa fa-check"></i><b>4.1</b> Computational arguments</a></li>
+<li class="chapter" data-level="4.2" data-path="workflow.html"><a href="workflow.html#simulation-timing"><i class="fa fa-check"></i><b>4.2</b> Simulation timing</a></li>
+<li class="chapter" data-level="4.3" data-path="workflow.html"><a href="workflow.html#receptor-locations"><i class="fa fa-check"></i><b>4.3</b> Receptor locations</a></li>
+<li class="chapter" data-level="4.4" data-path="workflow.html"><a href="workflow.html#meteorological-data-input"><i class="fa fa-check"></i><b>4.4</b> Meteorological data input</a></li>
+<li class="chapter" data-level="4.5" data-path="workflow.html"><a href="workflow.html#model-control"><i class="fa fa-check"></i><b>4.5</b> Model control</a></li>
+<li class="chapter" data-level="4.6" data-path="workflow.html"><a href="workflow.html#transport-and-dispersion"><i class="fa fa-check"></i><b>4.6</b> Transport and dispersion</a></li>
+<li class="chapter" data-level="4.7" data-path="workflow.html"><a href="workflow.html#transport-and-dispersion-1"><i class="fa fa-check"></i><b>4.7</b> Transport and dispersion</a></li>
+<li class="chapter" data-level="4.8" data-path="workflow.html"><a href="workflow.html#functionality"><i class="fa fa-check"></i><b>4.8</b> Functionality</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="outputs.html"><a href="outputs.html"><i class="fa fa-check"></i><b>5</b> Outputs</a><ul>
+<li class="chapter" data-level="5.1" data-path="outputs.html"><a href="outputs.html#footprint.nc"><i class="fa fa-check"></i><b>5.1</b> FOOTPRINT.nc</a></li>
+<li class="chapter" data-level="5.2" data-path="outputs.html"><a href="outputs.html#stilt_output.rds"><i class="fa fa-check"></i><b>5.2</b> STILT_OUTPUT.rds</a></li>
+</ul></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">STILT Documentation</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="workflow" class="section level1">
+<h1><span class="header-section-number">4</span> Workflow &amp; run_stilt.r</h1>
+<div id="computational-arguments" class="section level2">
+<h2><span class="header-section-number">4.1</span> Computational arguments</h2>
+<table>
+<colgroup>
+<col width="12%" />
+<col width="87%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Arg</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>project</code></td>
+<td>Project name</td>
+</tr>
+<tr class="even">
+<td><code>stilt_wd</code></td>
+<td>Working directory for the given project</td>
+</tr>
+<tr class="odd">
+<td><code>lib.loc</code></td>
+<td>Path to R package installations, passed to <code>library()</code></td>
+</tr>
+<tr class="even">
+<td><code>rm_dat</code></td>
+<td>Logical indicating whether to delete <code>PARTICLE.DAT</code> after each simulation. Default to TRUE to reduce disk space since all of the trajectory information is also stored in <code>STILT_OUTPUT.rds</code> alongside the calculated upstream influence footprint</td>
+</tr>
+<tr class="odd">
+<td><code>n_nodes</code></td>
+<td>If using SLURM for job submission, number of nodes to utilize</td>
+</tr>
+<tr class="even">
+<td><code>n_cores</code></td>
+<td>Number of cores per node to parallelize simulations by receptor locations and times</td>
+</tr>
+<tr class="odd">
+<td><code>n_cores_grid</code></td>
+<td>Number of cores per process to utilize for gridding computing gaussian kernels</td>
+</tr>
+<tr class="even">
+<td><code>slurm</code></td>
+<td>Logical indicating the use of rSLURM to submit job(s)</td>
+</tr>
+<tr class="odd">
+<td><code>slurm_options</code></td>
+<td>Named list of options passed to <code>sbatch</code> using <code>rslurm::slurm_apply</code>, which typically includes <code>time</code>, <code>account</code>, and <code>partition</code> values</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="simulation-timing" class="section level2">
+<h2><span class="header-section-number">4.2</span> Simulation timing</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Arg</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>t_start/t_end</code></td>
+<td>Simulation timing, formatted as <code>'yyyy-mm-dd HH:MM:SS'</code> UTC</td>
+</tr>
+<tr class="even">
+<td><code>run_times</code></td>
+<td>Hourly simulations spanning <code>t_start</code> through <code>t_end</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="receptor-locations" class="section level2">
+<h2><span class="header-section-number">4.3</span> Receptor locations</h2>
+<table>
+<colgroup>
+<col width="20%" />
+<col width="79%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Arg</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>lati</code></td>
+<td>Receptor latitude(s), in degrees. Can be a single value or a vector with length equal to <code>length(run_times)</code> of receptor latitudes</td>
+</tr>
+<tr class="even">
+<td><code>long</code></td>
+<td>Receptor longitude(s), in degrees. Can be a single value or a vector with length equal to <code>length(run_times)</code> of receptor longitudes</td>
+</tr>
+<tr class="odd">
+<td><code>zagl</code></td>
+<td>Receptor height(s), in meters above ground level. Can be a single value or a vector with length equal to <code>length(run_times)</code> of receptor heights</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="meteorological-data-input" class="section level2">
+<h2><span class="header-section-number">4.4</span> Meteorological data input</h2>
+<table>
+<colgroup>
+<col width="20%" />
+<col width="79%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Arg</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>met_directory</code></td>
+<td>Full directory path in which ARL compatible meteorological data files can be found</td>
+</tr>
+<tr class="even">
+<td><code>met_file_format</code></td>
+<td><code>strftime</code> compatible file naming convention to identify meteorological data files necessary for the timing of the simulation, such as <code>%Y%m%d.%Hz.hrrra</code>. Also accepts wildcards that match regular expression patterns passed to <code>dir()</code>, such as <code>wrfout_d0*_jul.arl</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="model-control" class="section level2">
+<h2><span class="header-section-number">4.5</span> Model control</h2>
+<table>
+<colgroup>
+<col width="18%" />
+<col width="81%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Arg</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>delt</code></td>
+<td>integration timestep [min]; if set to 0.0, then timestep is dynamically determined</td>
+</tr>
+<tr class="even">
+<td><code>n_hours</code></td>
+<td>Number of hours to run each simulation; negative indicates backward in time</td>
+</tr>
+<tr class="odd">
+<td><code>numpar</code></td>
+<td>number of particles to be run; defaults to 200</td>
+</tr>
+<tr class="even">
+<td><code>outdt</code></td>
+<td>interval [min] to output data to PARTICLE.DAT; defaults to 0.0, which outputs at every timestep</td>
+</tr>
+<tr class="odd">
+<td><code>run_trajec</code></td>
+<td>Logical indicating whether to produce new trajectories with <code>hymodelc</code>. If FALSE, will load the previous <code>STILT_OUTPUT.rds</code> for regridding purposes</td>
+</tr>
+<tr class="even">
+<td><code>varsiwant</code></td>
+<td>character vector of 4-letter hymodelc variables. Options include <code>NULL</code> for all variables, or a vector containing a minimum of <code>c('time', 'indx', 'lati', 'long', 'zagl', 'foot')</code> and optionally containing ‘sigw’, ‘tlgr’, ‘zsfc’, ‘icdx’, ‘temp’, ‘samt’, ‘shtf’, ‘tcld’, ‘dmas’, ‘dens’, ‘rhfr’, ‘sphu’, ‘solw’, ‘lcld’, ‘zloc’, ‘dswf’, ‘wout’, ‘mlht’, ‘rain’, ‘crai’</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="transport-and-dispersion" class="section level2">
+<h2><span class="header-section-number">4.6</span> Transport and dispersion</h2>
+<table>
+<colgroup>
+<col width="18%" />
+<col width="81%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Arg</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>iconvect</code></td>
+<td>flag for convection. If set to 1, then runs excessive convection as described in Gerbig et al., 2003. For specialized RAMS output, the particles will be vertically redistributed according to the output convective mass fluxes; defaults to 0</td>
+</tr>
+<tr class="even">
+<td><code>isot</code></td>
+<td>flag used to set the isotropic turbulence option; defaults to 0 to compute horizontal turbulence from wind field deformation. Setting to 1 results in the horizontal turbulence to be the same in both the u and v directions</td>
+</tr>
+<tr class="odd">
+<td><code>mgmin</code></td>
+<td><strong>Needs documentation</strong></td>
+</tr>
+<tr class="even">
+<td><code>ndump</code></td>
+<td>flag to dump all particle/puff points at the end of a simulation to a file called PARDUMP. This can be read at the start of a new simulation to continue the previous calculation. Valid settings include 0 (no i/o), 1 (read/write), 2 (read only), 3 (write only); defaults to 0</td>
+</tr>
+<tr class="odd">
+<td><code>nturb</code></td>
+<td>no turbulence flag; defaults to 0, which includes turbulence rather than simulating mean trajectories</td>
+</tr>
+<tr class="even">
+<td><code>outfrac</code></td>
+<td>the fraction of the particles that are allowed to leave the model domain (given by met data); defaults to 0.9. If exceeded, the model stops</td>
+</tr>
+<tr class="odd">
+<td><code>random</code></td>
+<td>flag that tells the random number generator whether to have a different random sequence for each model run (0 - false, 1 - true); defaults to 1</td>
+</tr>
+<tr class="even">
+<td><code>tlfrac</code></td>
+<td>the fraction of the lagrangian timescale TL to set as timestep in dispersion subroutine. The smaller this fraction is, the more finely the turbulence is resolved; defaults to 0.1</td>
+</tr>
+<tr class="odd">
+<td><code>tratio</code></td>
+<td>maximum fraction of gridcell to be travelled by a particle in a single integration timestep. This determines the timestep if DELT is set to be dynamic</td>
+</tr>
+<tr class="even">
+<td><code>veght</code></td>
+<td>height below which a particle’s time spent is tallied; defaults to 0.5, which specifies half of the PBL. Setting &lt;=1.0 specifies a fraction of the boundary layer height, and setting &gt;1.0 specifies a height above ground in meters</td>
+</tr>
+<tr class="odd">
+<td><code>w_option</code></td>
+<td>vertical motion calculation method. 0: use vertical velocity from data, 1: isob, 2: isen, 3: dens, 4: sigma; defaults to 0</td>
+</tr>
+<tr class="even">
+<td><code>winderrtf</code></td>
+<td>flag that specifies whether to have particle motions be affected by horizontal wind errors; defaults to 0. If set to 1, then STILT looks for a file called “WINDERR” that has four lines: 1. Standard deviation of errors [m/s], 2. Correlation timescale of errors [min], 3. Vertical correlation lengthscale of errors [m], 4. Horizontal correlation lengthscale of errors [km]. All statistical properties are applied equally in the u and v wind components</td>
+</tr>
+<tr class="odd">
+<td><code>z_top</code></td>
+<td>top of model domain, in meters above ground level; defaults to 25000.0</td>
+</tr>
+<tr class="even">
+<td><code>zicontroltf</code></td>
+<td>flag that specifies whether to scale the PBL heights in STILT uniformly in the entire model domain; defaults to 0. If set to 1, then STILT looks for a file called “ZICONTROL” that specifies the scaling for the PBL height. The first line indicates the number of hours that the PBL height will be changed, and each subsequent line indicates the scaling factor for that hour</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="transport-and-dispersion-1" class="section level2">
+<h2><span class="header-section-number">4.7</span> Transport and dispersion</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Arg</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>xmn</code></td>
+<td>grid start longitude, in degrees from -180 to 180</td>
+</tr>
+<tr class="even">
+<td><code>xmx</code></td>
+<td>grid end longitude, in degrees from -180 to 180</td>
+</tr>
+<tr class="odd">
+<td><code>ymn</code></td>
+<td>grid start latitude, in degrees from -180 to 180</td>
+</tr>
+<tr class="even">
+<td><code>ymx</code></td>
+<td>grid end latitude, in degrees from -180 to 180</td>
+</tr>
+<tr class="odd">
+<td><code>xres</code></td>
+<td>resolution for longitude grid, in degrees</td>
+</tr>
+<tr class="even">
+<td><code>yres</code></td>
+<td>resolution for latitude grid, in degrees</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="functionality" class="section level2">
+<h2><span class="header-section-number">4.8</span> Functionality</h2>
+<p>After turning the desired knobs from the sections above, the script symlinks the meteorological data path to the user’s home directory, with the default format <code>paste0('m', project)</code>. This is done to avoid issues with paths longer than 80 characters, which will result in unsuccessful fortran simulations.</p>
+<p>User parameters are then passed to <code>stilt_apply</code>, which chooses the appropriate function to dispatch the simulations. If using SLURM for job submission, <code>stilt_apply</code> will use the <code>rslurm</code> package to submit jobs across <code>n_nodes</code> and <code>n_cores</code> per node. If running in parallel on a single node without SLURM, <code>stilt_apply</code> will use the <code>parallel</code> package to run simulations on the current node across <code>n_cores</code>. Otherwise, <code>stilt_apply</code> will run the simulations serially using <code>lapply()</code>.</p>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="structure.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="outputs.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"google": false,
+"weibo": false,
+"instapper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"download": null,
+"toc": {
+"collapse": "section"
+}
+});
+});
+</script>
+
+</body>
+
+</html>

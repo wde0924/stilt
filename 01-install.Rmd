@@ -1,0 +1,65 @@
+# Installation
+
+## Software dependencies {#dependencies}
+
+STILT has been compiled to run on UNIX platforms (Mac, Linux). Required software includes
+
+- R (v >= 3.25), [https://www.r-project.org/](https://www.r-project.org/)  
+    - `dplyr` package, for speed and data manipulation
+    - `parallel` package, for parallel computation on a single node
+    - `raster` package, for raster-based spatial analysis
+    - `rslurm` package, for parallel computation across multiple nodes
+    - `uataq` package, for data manipulation
+- One of the following Fortran compilers
+    - Portland Group Compiler (pgf90)
+    - Intel Fortran Compiler (ifort)
+    - GNU Fortan Compiler (gfortran)
+    - G95 Fortran Compiler (g95)
+- Git, [https://git-scm.com/](https://git-scm.com/)
+
+## Install methods
+
+Two options exist to initialize a new STILT project. 
+
+### R (preferred)
+
+This method uses R to initialize a new project. `stilt_init()` in the UATAQ R package, which includes tools for trace gas data manipulation and analysis, is a wrapper around several system commands that do much of the heavy lifting. The UATAQ package is available on [Github](https://github.com/benfasoli/uataq/) and can be installed in R using `devtools`.
+
+```r
+if (!require('devtools')) install.packages('devtools')
+devtools::install_github('benfasoli/uataq')
+```
+
+A new STILT project can then be initialized in plain R code with
+
+```r
+uataq::stilt_init('myproject')
+```
+
+This function  
+1. clones the stilt Github repository into a local `stilt` directory which is then renamed `myproject`  
+2. renames this directory to `myproject`  
+3. runs the `myproject/setup` executable, which compiles and moves the hymodelc executable to the `exe` directory  
+4. populates the project name and paths in `myproject/r/run_stilt.r`  
+
+### Manual
+
+While the R method is preferable since it streamlines the process of initializing new projects, the same can be accompolished manually. To reproduce the results above,
+
+Clone the repository and set the name of the project
+
+```
+git clone https://github.com/benfasoli/stilt
+mv stilt myproject
+```
+
+Compile and move the hymodelc executable to the `exe` directory using the provided `setup` script (or manually)
+
+```
+cd myproject
+chmod +x setup
+./setup
+```
+
+Finally, edit `r/run_stilt.r` setting `project`, `paths`, receptor timing/locations, and model parameters.
+

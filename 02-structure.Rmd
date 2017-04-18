@@ -1,0 +1,52 @@
+# Repository structure {#structure}
+
+The repository contains a number of directories that serve as the framework for the model. Initially, only the `r/` and `fortran/` directories are fully populated while `fortran/` and `setup` are used for the project initialization and compilation of `hymodelc`.
+
+```
+exe/
+  hymodelc
+  ...
+fortran/
+  ...
+out/
+  #_yyyymmddHH_lati_long_zagl
+  ...
+r/
+  src/
+    ...
+  dependencies.r
+  run_stilt.r
+setup
+```
+
+## exe/
+
+Location for the compiled `hymodelc` executable as well as shared model configuration files, such as `ASCDATA.CFG`, `CONC.CFG`, `LANDUSE.ASC`, `ROUGLEN.ASC`, etc.
+
+## fortran/
+
+`hymodelc` fortran source code and make file used for compilation. `hymodelc` can be compiled manually with
+
+```
+cd fortran
+make
+mv hymodelc ../exe/hymodelc
+cd ..
+chmod +x exe/hymodelc
+```
+
+or using the included `setup` script (found in the base directory) which executes the above commands.
+
+## out/
+
+Initially empty, this folder propagates subdirectories when simulations begin. See [Outputs](#outputs).
+
+
+## r/
+
+`run_stilt.r` is used to adjust model parameters, execute the simulations, and produce upstream influence footprints. See [Workflow](#workflow).
+
+`dependencies.r` is used to load the necessary functions and packages for `run_stilt.r` and replicates the functions available in the R environment across multiple processes running on separate cores/nodes.
+
+The `src/` subdirectory contains the bulk of the STILT source code but should not need to be modified. Each file contains a single R function with metadata documenting function arguments and usage instructions for making programatic adjustment to STILT's workflow.
+
