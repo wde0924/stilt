@@ -4,7 +4,7 @@ The `out/` directory contains model parameters and outputs in subdirectories org
 
 Abbreviation   | Value
 ---------------|----------------------------------
-`#`           | Receptor index
+`#`            | Receptor index
 `yyyy`         | Year (start)
 `mm`           | Month (start)
 `dd`           | Day (start)
@@ -16,9 +16,65 @@ Abbreviation   | Value
 These directories also contain symbolic links to the files in `exe/` including the `hymodelc` executable. When the model runs trajectory simulations, diagnostic information (`hymodelc.out`) and model output (`FOOTPRINT.nc`, `STILT_OUTPUT.rds`) are also stored here.
 
 
-## FOOTPRINT.nc
+## Footprint .rds
 
-Footprint matrices are written to `FOOTPRINT.nc` with `raster::writeRaster()`. The areal extent of these footprints is trimmed to only contain the grid containing particle locations to help reduce file size. The bounds of the grid are included in the netcdf metadata but the extent of footprints will likely differ.
+Footprint rasters are packaged and saved in a compressed .rds file with the naming convention `YYYYMMDDHH_LONG_LATI_ZAGL_foot.rds`. This object contains information about the model domain (accessed with `raster::extent()`), the grid resolution (accessed with `raster::res()`).
+
+This object is structured as
+
+```
+Formal class 'RasterLayer' [package "raster"] with 12 slots
+  ..@ file    :Formal class '.RasterFile' [package "raster"] with 13 slots
+  .. .. ..@ name        : chr ""
+  .. .. ..@ datanotation: chr "FLT4S"
+  .. .. ..@ byteorder   : chr "little"
+  .. .. ..@ nodatavalue : num -3.4e+38
+  .. .. ..@ NAchanged   : logi FALSE
+  .. .. ..@ nbands      : int 1
+  .. .. ..@ bandorder   : chr "BIL"
+  .. .. ..@ offset      : int 0
+  .. .. ..@ toptobottom : logi TRUE
+  .. .. ..@ blockrows   : int 0
+  .. .. ..@ blockcols   : int 0
+  .. .. ..@ driver      : chr ""
+  .. .. ..@ open        : logi FALSE
+  ..@ data    :Formal class '.SingleLayerData' [package "raster"] with 13 slots
+  .. .. ..@ values    : num [1:600000] 0 0 0 0 0 0 0 0 0 0 ...
+  .. .. ..@ offset    : num 0
+  .. .. ..@ gain      : num 1
+  .. .. ..@ inmemory  : logi TRUE
+  .. .. ..@ fromdisk  : logi FALSE
+  .. .. ..@ isfactor  : logi FALSE
+  .. .. ..@ attributes: list()
+  .. .. ..@ haveminmax: logi TRUE
+  .. .. ..@ min       : num 0
+  .. .. ..@ max       : num 0.0173
+  .. .. ..@ band      : int 1
+  .. .. ..@ unit      : chr ""
+  .. .. ..@ names     : chr "foot"
+  ..@ legend  :Formal class '.RasterLegend' [package "raster"] with 5 slots
+  .. .. ..@ type      : chr(0) 
+  .. .. ..@ values    : logi(0) 
+  .. .. ..@ color     : logi(0) 
+  .. .. ..@ names     : logi(0) 
+  .. .. ..@ colortable: logi(0) 
+  ..@ title   : chr(0) 
+  ..@ extent  :Formal class 'Extent' [package "raster"] with 4 slots
+  .. .. ..@ xmin: num -116
+  .. .. ..@ xmax: num -110
+  .. .. ..@ ymin: num 35
+  .. .. ..@ ymax: num 45
+  ..@ rotated : logi FALSE
+  ..@ rotation:Formal class '.Rotation' [package "raster"] with 2 slots
+  .. .. ..@ geotrans: num(0) 
+  .. .. ..@ transfun:function ()  
+  ..@ ncols   : int 600
+  ..@ nrows   : int 1000
+  ..@ crs     :Formal class 'CRS' [package "sp"] with 1 slot
+  .. .. ..@ projargs: chr "+proj=longlat +ellps=WGS84"
+  ..@ history : list()
+  ..@ z       : list()
+```
 
 
 ## STILT_OUTPUT.rds
@@ -36,16 +92,6 @@ List of 5
   ..$ lati     : num 40.8
   ..$ long     : num -112
   ..$ zagl     : num 10
- $ footprint:List of 4
-  ..$ file      : chr "stilt_wd/out/1_2015061600_-111.847672_40.766189_10/FOOTPRINT.nc"
-  ..$ data      : Formal class 'RasterLayer' [package "raster"] with 12 slots
-  .. ...
-  ..$ resolution:List of 2
-  .. ..$ x: num 0.002
-  .. ..$ y: num 0.002
-  ..$ domain    :List of 2
-  .. ..$ long: num [1:2] -124 -112
-  .. ..$ lati: num [1:2] 34.3 40.8
  $ particle :'data.frame':	n obs. of  29 variables:
   .. ...
 ```

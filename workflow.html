@@ -128,7 +128,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li class="chapter" data-level="4.8" data-path="workflow.html"><a href="workflow.html#functionality"><i class="fa fa-check"></i><b>4.8</b> Functionality</a></li>
 </ul></li>
 <li class="chapter" data-level="5" data-path="outputs.html"><a href="outputs.html"><i class="fa fa-check"></i><b>5</b> Outputs</a><ul>
-<li class="chapter" data-level="5.1" data-path="outputs.html"><a href="outputs.html#footprint.nc"><i class="fa fa-check"></i><b>5.1</b> FOOTPRINT.nc</a></li>
+<li class="chapter" data-level="5.1" data-path="outputs.html"><a href="outputs.html#footprint-.rds"><i class="fa fa-check"></i><b>5.1</b> Footprint .rds</a></li>
 <li class="chapter" data-level="5.2" data-path="outputs.html"><a href="outputs.html#stilt_output.rds"><i class="fa fa-check"></i><b>5.2</b> STILT_OUTPUT.rds</a></li>
 </ul></li>
 </ul>
@@ -189,14 +189,10 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <td>Number of cores per node to parallelize simulations by receptor locations and times</td>
 </tr>
 <tr class="odd">
-<td><code>n_cores_grid</code></td>
-<td>Number of cores per process to utilize for gridding computing gaussian kernels</td>
-</tr>
-<tr class="even">
 <td><code>slurm</code></td>
 <td>Logical indicating the use of rSLURM to submit job(s)</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>slurm_options</code></td>
 <td>Named list of options passed to <code>sbatch</code> using <code>rslurm::slurm_apply</code>, which typically includes <code>time</code>, <code>account</code>, and <code>partition</code> values</td>
 </tr>

@@ -128,7 +128,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li class="chapter" data-level="4.8" data-path="workflow.html"><a href="workflow.html#functionality"><i class="fa fa-check"></i><b>4.8</b> Functionality</a></li>
 </ul></li>
 <li class="chapter" data-level="5" data-path="outputs.html"><a href="outputs.html"><i class="fa fa-check"></i><b>5</b> Outputs</a><ul>
-<li class="chapter" data-level="5.1" data-path="outputs.html"><a href="outputs.html#footprint.nc"><i class="fa fa-check"></i><b>5.1</b> FOOTPRINT.nc</a></li>
+<li class="chapter" data-level="5.1" data-path="outputs.html"><a href="outputs.html#footprint-.rds"><i class="fa fa-check"></i><b>5.1</b> Footprint .rds</a></li>
 <li class="chapter" data-level="5.2" data-path="outputs.html"><a href="outputs.html#stilt_output.rds"><i class="fa fa-check"></i><b>5.2</b> STILT_OUTPUT.rds</a></li>
 </ul></li>
 </ul>
@@ -194,9 +194,61 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </tbody>
 </table>
 <p>These directories also contain symbolic links to the files in <code>exe/</code> including the <code>hymodelc</code> executable. When the model runs trajectory simulations, diagnostic information (<code>hymodelc.out</code>) and model output (<code>FOOTPRINT.nc</code>, <code>STILT_OUTPUT.rds</code>) are also stored here.</p>
-<div id="footprint.nc" class="section level2">
-<h2><span class="header-section-number">5.1</span> FOOTPRINT.nc</h2>
-<p>Footprint matrices are written to <code>FOOTPRINT.nc</code> with <code>raster::writeRaster()</code>. The areal extent of these footprints is trimmed to only contain the grid containing particle locations to help reduce file size. The bounds of the grid are included in the netcdf metadata but the extent of footprints will likely differ.</p>
+<div id="footprint-.rds" class="section level2">
+<h2><span class="header-section-number">5.1</span> Footprint .rds</h2>
+<p>Footprint rasters are packaged and saved in a compressed .rds file with the naming convention <code>YYYYMMDDHH_LONG_LATI_ZAGL_foot.rds</code>. This object contains information about the model domain (accessed with <code>raster::extent()</code>), the grid resolution (accessed with <code>raster::res()</code>).</p>
+<p>This object is structured as</p>
+<pre><code>Formal class &#39;RasterLayer&#39; [package &quot;raster&quot;] with 12 slots
+  ..@ file    :Formal class &#39;.RasterFile&#39; [package &quot;raster&quot;] with 13 slots
+  .. .. ..@ name        : chr &quot;&quot;
+  .. .. ..@ datanotation: chr &quot;FLT4S&quot;
+  .. .. ..@ byteorder   : chr &quot;little&quot;
+  .. .. ..@ nodatavalue : num -3.4e+38
+  .. .. ..@ NAchanged   : logi FALSE
+  .. .. ..@ nbands      : int 1
+  .. .. ..@ bandorder   : chr &quot;BIL&quot;
+  .. .. ..@ offset      : int 0
+  .. .. ..@ toptobottom : logi TRUE
+  .. .. ..@ blockrows   : int 0
+  .. .. ..@ blockcols   : int 0
+  .. .. ..@ driver      : chr &quot;&quot;
+  .. .. ..@ open        : logi FALSE
+  ..@ data    :Formal class &#39;.SingleLayerData&#39; [package &quot;raster&quot;] with 13 slots
+  .. .. ..@ values    : num [1:600000] 0 0 0 0 0 0 0 0 0 0 ...
+  .. .. ..@ offset    : num 0
+  .. .. ..@ gain      : num 1
+  .. .. ..@ inmemory  : logi TRUE
+  .. .. ..@ fromdisk  : logi FALSE
+  .. .. ..@ isfactor  : logi FALSE
+  .. .. ..@ attributes: list()
+  .. .. ..@ haveminmax: logi TRUE
+  .. .. ..@ min       : num 0
+  .. .. ..@ max       : num 0.0173
+  .. .. ..@ band      : int 1
+  .. .. ..@ unit      : chr &quot;&quot;
+  .. .. ..@ names     : chr &quot;foot&quot;
+  ..@ legend  :Formal class &#39;.RasterLegend&#39; [package &quot;raster&quot;] with 5 slots
+  .. .. ..@ type      : chr(0) 
+  .. .. ..@ values    : logi(0) 
+  .. .. ..@ color     : logi(0) 
+  .. .. ..@ names     : logi(0) 
+  .. .. ..@ colortable: logi(0) 
+  ..@ title   : chr(0) 
+  ..@ extent  :Formal class &#39;Extent&#39; [package &quot;raster&quot;] with 4 slots
+  .. .. ..@ xmin: num -116
+  .. .. ..@ xmax: num -110
+  .. .. ..@ ymin: num 35
+  .. .. ..@ ymax: num 45
+  ..@ rotated : logi FALSE
+  ..@ rotation:Formal class &#39;.Rotation&#39; [package &quot;raster&quot;] with 2 slots
+  .. .. ..@ geotrans: num(0) 
+  .. .. ..@ transfun:function ()  
+  ..@ ncols   : int 600
+  ..@ nrows   : int 1000
+  ..@ crs     :Formal class &#39;CRS&#39; [package &quot;sp&quot;] with 1 slot
+  .. .. ..@ projargs: chr &quot;+proj=longlat +ellps=WGS84&quot;
+  ..@ history : list()
+  ..@ z       : list()</code></pre>
 </div>
 <div id="stilt_output.rds" class="section level2">
 <h2><span class="header-section-number">5.2</span> STILT_OUTPUT.rds</h2>
@@ -210,16 +262,6 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
   ..$ lati     : num 40.8
   ..$ long     : num -112
   ..$ zagl     : num 10
- $ footprint:List of 4
-  ..$ file      : chr &quot;stilt_wd/out/1_2015061600_-111.847672_40.766189_10/FOOTPRINT.nc&quot;
-  ..$ data      : Formal class &#39;RasterLayer&#39; [package &quot;raster&quot;] with 12 slots
-  .. ...
-  ..$ resolution:List of 2
-  .. ..$ x: num 0.002
-  .. ..$ y: num 0.002
-  ..$ domain    :List of 2
-  .. ..$ long: num [1:2] -124 -112
-  .. ..$ lati: num [1:2] 34.3 40.8
  $ particle :&#39;data.frame&#39;:  n obs. of  29 variables:
   .. ...</code></pre>
 <p>Particle trajectory data is stored in a data frame with columns corresponding with varsiwant and can be accessed with <code>out$particle</code>. The footprint raster can be accessed with <code>out$footprint</code>. For more information about raster manipulation, the <a href="https://geoscripting-wur.github.io/IntroToRaster/">Raster R package</a> is a good place to start.</p>

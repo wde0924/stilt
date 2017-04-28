@@ -10,7 +10,6 @@ Arg       | Description
 `rm_dat`  | Logical indicating whether to delete `PARTICLE.DAT` after each simulation. Default to TRUE to reduce disk space since all of the trajectory information is also stored in `STILT_OUTPUT.rds` alongside the calculated upstream influence footprint
 `n_nodes` | If using SLURM for job submission, number of nodes to utilize
 `n_cores` | Number of cores per node to parallelize simulations by receptor locations and times
-`n_cores_grid` | Number of cores per process to utilize for gridding computing gaussian kernels
 `slurm`   | Logical indicating the use of rSLURM to submit job(s)
 `slurm_options` | Named list of options passed to `sbatch` using `rslurm::slurm_apply`, which typically includes `time`, `account`, and `partition` values
 
