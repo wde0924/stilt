@@ -80,6 +80,7 @@ Arg             | Description
 `ymx` | grid end latitude, in degrees from -180 to 180
 `xres` | resolution for longitude grid, in degrees
 `yres` | resolution for latitude grid, in degrees
+`time_integrate` | logical indicating whether to integrate footprint over time or retain discrete time steps
 
 
 ## Functionality

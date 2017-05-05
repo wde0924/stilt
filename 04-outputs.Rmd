@@ -1,10 +1,9 @@
 # Outputs {#outputs}
 
-The `out/` directory contains model parameters and outputs in subdirectories organized by receptor timing and locations. The directories are named with the convention `#_yyyymmddHH_long_lati_zagl` where
+The `out/` directory contains model parameters and outputs in subdirectories organized by receptor timing and locations. The directories are named with the convention `yyyymmddHH_long_lati_zagl` where
 
 Abbreviation   | Value
 ---------------|----------------------------------
-`#`            | Receptor index
 `yyyy`         | Year (start)
 `mm`           | Month (start)
 `dd`           | Day (start)
@@ -13,89 +12,108 @@ Abbreviation   | Value
 `long`         | Receptor longitude (deg)
 `zagl`         | Receptor height above ground (m)
 
-These directories also contain symbolic links to the files in `exe/` including the `hymodelc` executable. When the model runs trajectory simulations, diagnostic information (`hymodelc.out`) and model output (`FOOTPRINT.nc`, `STILT_OUTPUT.rds`) are also stored here.
+These directories also contain symbolic links to the files in `exe/` including the `hymodelc` executable. When the model runs trajectory simulations, diagnostic information (`hymodelc.out`) and model output are also stored here.
+
+
+## Trajectory .rds
+
+Particle trajectories and run information are packaged and saved in a compressed .rds file with the naming convention with the naming convention `YYYYMMDDHH_LONG_LATI_ZAGL_traj.rds`. This allows regridding of the footprints without recalculating particle trajectories. Load into R with `out <- readRDS('YYYYMMDDHH_LONG_LATI_ZAGL_traj.rds')`{.r}.
+
+This object is structured as
+
+```{r, eval = F}
+out <- readRDS('YYYYMMDDHH_LONG_LATI_ZAGL_foot.rds')
+str(out)
+# List of 4
+#  $ runtime : POSIXct[1:1], format: "2015-06-16"
+#  $ file    : chr "/uufs/chpc.utah.edu/common/home/u0791983/stilt-sims/test/out/2015061600_-111.847672_40.766189_10/2015061600_-111.847672_40.7661"| __truncated__
+#  $ receptor:Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	1 obs. of  4 variables:
+#   ..$ run_time: POSIXct[1:1], format: "2015-06-16"
+#   ..$ lati    : num 40.8
+#   ..$ long    : num -112
+#   ..$ zagl    : num 10
+#  $ particle:Classes ‘tbl_df’, ‘tbl’ and 'data.frame':	128441 obs. of  26 variables:
+#   ..$ time: num [1:128441] -2 -2 -2 -2 -2 -2 -2 -2 -2 -2 ...
+#   ..$ indx: num [1:128441] 1 2 3 4 5 6 7 8 9 10 ...
+#   ..$ long: num [1:128441] -112 -112 -112 -112 -112 ...
+#   ..$ lati: num [1:128441] 40.8 40.8 40.8 40.8 40.8 ...
+#   ..$ zagl: num [1:128441] 61.3 100.6 87.3 98.3 88.6 ...
+#   ..$ sigw: num [1:128441] 1.15 1.15 1.15 1.15 1.15 ...
+#   ..$ tlgr: num [1:128441] 8.05 8.05 8.05 8.05 8.05 ...
+#   ..$ zsfc: num [1:128441] 1532 1532 1532 1532 1532 ...
+#   ..$ icdx: num [1:128441] 2 2 2 2 2 2 2 2 2 2 ...
+#   ..$ temp: num [1:128441] 301 301 301 301 301 ...
+#   ..$ samt: num [1:128441] 2 2 2 2 2 ...
+#   ..$ foot: num [1:128441] 0.0219 0.0219 0.0219 0.0219 0.0219 ...
+#   ..$ shtf: num [1:128441] 0 0 0 0 0 0 0 0 0 0 ...
+#   ..$ tcld: num [1:128441] 87.9 87.9 87.9 87.9 87.9 ...
+#   ..$ dmas: num [1:128441] 1.104 1.104 1.104 0.991 1.119 ...
+#   ..$ dens: num [1:128441] 0.968 0.965 0.966 0.965 0.966 ...
+#   ..$ rhfr: num [1:128441] 0.277 0.282 0.28 0.282 0.28 ...
+#   ..$ sphu: num [1:128441] 0.00222 0.00222 0.00222 0.00222 0.00222 ...
+#   ..$ solw: num [1:128441] -99 -99 -99 -99 -99 -99 -99 -99 -99 -99 ...
+#   ..$ lcld: num [1:128441] -99 -99 -99 -99 -99 -99 -99 -99 -99 -99 ...
+#   ..$ zloc: num [1:128441] -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 ...
+#   ..$ dswf: num [1:128441] 25.2 25.2 25.2 25.2 25.2 25.2 25.2 25.2 25.2 25.2 ...
+#   ..$ wout: num [1:128441] 0.722 0.722 0.722 0.722 0.722 ...
+#   ..$ mlht: num [1:128441] 329 329 329 329 329 ...
+#   ..$ rain: num [1:128441] 4.02e-07 4.02e-07 4.02e-07 4.02e-07 4.02e-07 ...
+#   ..$ crai: num [1:128441] -0.9 -0.9 -0.9 -0.9 -0.9 -0.9 -0.9 -0.9 -0.9 -0.9 ...
+```
+
+Particle trajectory data is stored in a data frame with columns corresponding with varsiwant and can be accessed with `out$particle`{.r}.
 
 
 ## Footprint .rds
 
-Footprint rasters are packaged and saved in a compressed .rds file with the naming convention `YYYYMMDDHH_LONG_LATI_ZAGL_foot.rds`. This object contains information about the model domain (accessed with `raster::extent()`), the grid resolution (accessed with `raster::res()`).
+Footprints are packaged and saved in a compressed .rds file with the naming convention `YYYYMMDDHH_LONG_LATI_ZAGL_foot.rds`. This object contains information about the model domain, the grid resolution, and footprints per timestep (if `!time_integrate`).
 
 This object is structured as
 
-```
-Formal class 'RasterLayer' [package "raster"] with 12 slots
-  ..@ file    :Formal class '.RasterFile' [package "raster"] with 13 slots
-  .. .. ..@ name        : chr ""
-  .. .. ..@ datanotation: chr "FLT4S"
-  .. .. ..@ byteorder   : chr "little"
-  .. .. ..@ nodatavalue : num -3.4e+38
-  .. .. ..@ NAchanged   : logi FALSE
-  .. .. ..@ nbands      : int 1
-  .. .. ..@ bandorder   : chr "BIL"
-  .. .. ..@ offset      : int 0
-  .. .. ..@ toptobottom : logi TRUE
-  .. .. ..@ blockrows   : int 0
-  .. .. ..@ blockcols   : int 0
-  .. .. ..@ driver      : chr ""
-  .. .. ..@ open        : logi FALSE
-  ..@ data    :Formal class '.SingleLayerData' [package "raster"] with 13 slots
-  .. .. ..@ values    : num [1:600000] 0 0 0 0 0 0 0 0 0 0 ...
-  .. .. ..@ offset    : num 0
-  .. .. ..@ gain      : num 1
-  .. .. ..@ inmemory  : logi TRUE
-  .. .. ..@ fromdisk  : logi FALSE
-  .. .. ..@ isfactor  : logi FALSE
-  .. .. ..@ attributes: list()
-  .. .. ..@ haveminmax: logi TRUE
-  .. .. ..@ min       : num 0
-  .. .. ..@ max       : num 0.0173
-  .. .. ..@ band      : int 1
-  .. .. ..@ unit      : chr ""
-  .. .. ..@ names     : chr "foot"
-  ..@ legend  :Formal class '.RasterLegend' [package "raster"] with 5 slots
-  .. .. ..@ type      : chr(0) 
-  .. .. ..@ values    : logi(0) 
-  .. .. ..@ color     : logi(0) 
-  .. .. ..@ names     : logi(0) 
-  .. .. ..@ colortable: logi(0) 
-  ..@ title   : chr(0) 
-  ..@ extent  :Formal class 'Extent' [package "raster"] with 4 slots
-  .. .. ..@ xmin: num -116
-  .. .. ..@ xmax: num -110
-  .. .. ..@ ymin: num 35
-  .. .. ..@ ymax: num 45
-  ..@ rotated : logi FALSE
-  ..@ rotation:Formal class '.Rotation' [package "raster"] with 2 slots
-  .. .. ..@ geotrans: num(0) 
-  .. .. ..@ transfun:function ()  
-  ..@ ncols   : int 600
-  ..@ nrows   : int 1000
-  ..@ crs     :Formal class 'CRS' [package "sp"] with 1 slot
-  .. .. ..@ projargs: chr "+proj=longlat +ellps=WGS84"
-  ..@ history : list()
-  ..@ z       : list()
+```{r, eval = F}
+out <- readRDS('YYYYMMDDHH_LONG_LATI_ZAGL_foot.rds')
+str(out)
+# List of 4
+#  $ lati:List of 4
+#   ..$ unit  : chr "Degrees"
+#   ..$ res   : num 0.01
+#   ..$ extent: num [1:2] 39 42
+#   ..$ data  : num [1:300] 42 42 42 42 42 ...
+#  $ long:List of 4
+#   ..$ unit  : chr "Degrees"
+#   ..$ res   : num 0.01
+#   ..$ extent: num [1:2] -114 -110
+#   ..$ data  : num [1:450] -114 -114 -114 -114 -114 ...
+#  $ time:List of 2
+#   ..$ unit: chr "POSIXct Time"
+#   ..$ data: POSIXct[1:500], format: "2015-06-15 13:48:00" "2015-06-15 13:51:00" ...
+#  $ foot:List of 3
+#   ..$ unit: chr "ppm umol-1 m2 s"
+#   ..$ dims: chr [1:3] "lati" "long" "time"
+#   ..$ data: num [1:300, 1:450, 1:500] 0 0 0 0 0 0 0 0 0 0 ...
 ```
 
+To convert the output to a raster object, load the data into R and use the following sample code as a framework.
 
-## STILT_OUTPUT.rds
+```r
+library(raster)
+out <- readRDS('YYYYMMDDHH_LONG_LATI_ZAGL_foot.rds')
 
-Serialized R data file that contains a list of the particle trajectories and the footprint raster. This allows regridding of the footprints without recalculating particle trajectories. Load into R with `out <- readRDS('STILT_OUTPUT.rds')`.
+# 3-dimensional raster brick for output with discrete time steps
+b <- brick(extent(xmn, xmx, ymn, ymx),
+           crs = '+proj=longlat +ellps=WGS84')
+dim(b) <- dim(out$foot$data)
+b <- setValues(b, out$foot$data)
+b <- setZ(b, out$time$data, 'Time')
+# Time integrate for plotting
+plot(sum(b))
 
-This object is structured as
-
+# 1-demensional raster layer time integrated output
+r <- raster(extent(xmn, xmx, ymn, ymx),
+            crs = '+proj=longlat +ellps=WGS84')
+dim(r) <- dim(out$foot$data)
+r <- setValues(r, out$foot$data)
+plot(r)
 ```
-List of 5
- $ runtime  : POSIXct[1:1], format: "2015-06-16"
- $ file     : chr "stilt_wd/out/1_2015061600_-111.847672_40.766189_10/STILT_OUTPUT.rds"
- $ receptor :'data.frame':	1 obs. of  4 variables:
-  ..$ run_time : POSIXct[1:1], format: "2015-06-16"
-  ..$ lati     : num 40.8
-  ..$ long     : num -112
-  ..$ zagl     : num 10
- $ particle :'data.frame':	n obs. of  29 variables:
-  .. ...
-```
 
-Particle trajectory data is stored in a data frame with columns corresponding with varsiwant and can be accessed with `out$particle`. The footprint raster can be accessed with `out$footprint`. For more information about raster manipulation, the [Raster R package](https://geoscripting-wur.github.io/IntroToRaster/) is a good place to start.
-
-
+For more information about raster manipulation, the [Raster R package](https://geoscripting-wur.github.io/IntroToRaster/) is a good place to start.

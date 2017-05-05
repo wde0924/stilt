@@ -128,8 +128,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li class="chapter" data-level="4.8" data-path="workflow.html"><a href="workflow.html#functionality"><i class="fa fa-check"></i><b>4.8</b> Functionality</a></li>
 </ul></li>
 <li class="chapter" data-level="5" data-path="outputs.html"><a href="outputs.html"><i class="fa fa-check"></i><b>5</b> Outputs</a><ul>
-<li class="chapter" data-level="5.1" data-path="outputs.html"><a href="outputs.html#footprint-.rds"><i class="fa fa-check"></i><b>5.1</b> Footprint .rds</a></li>
-<li class="chapter" data-level="5.2" data-path="outputs.html"><a href="outputs.html#stilt_output.rds"><i class="fa fa-check"></i><b>5.2</b> STILT_OUTPUT.rds</a></li>
+<li class="chapter" data-level="5.1" data-path="outputs.html"><a href="outputs.html#trajectory-.rds"><i class="fa fa-check"></i><b>5.1</b> Trajectory .rds</a></li>
+<li class="chapter" data-level="5.2" data-path="outputs.html"><a href="outputs.html#footprint-.rds"><i class="fa fa-check"></i><b>5.2</b> Footprint .rds</a></li>
 </ul></li>
 </ul>
 
@@ -391,6 +391,10 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="footprint-gridding" class="section level2">
 <h2><span class="header-section-number">4.7</span> Footprint gridding</h2>
 <table>
+<colgroup>
+<col width="18%" />
+<col width="81%" />
+</colgroup>
 <thead>
 <tr class="header">
 <th>Arg</th>
@@ -421,6 +425,10 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <tr class="even">
 <td><code>yres</code></td>
 <td>resolution for latitude grid, in degrees</td>
+</tr>
+<tr class="odd">
+<td><code>time_integrate</code></td>
+<td>logical indicating whether to integrate footprint over time or retain discrete time steps</td>
 </tr>
 </tbody>
 </table>
