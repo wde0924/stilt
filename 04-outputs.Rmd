@@ -66,6 +66,6 @@ Particle trajectory data is stored in a data frame with columns corresponding wi
 
 ## Footprint .nc
 
-Footprints are packaged and saved in a compressed .nc file with the naming convention `YYYYMMDDHH_LONG_LATI_ZAGL_foot.nc`. This object contains information about the model domain, the grid resolution, and footprints per timestep (if `!time_integrate`). For those familiar with raster operations, the default output is compatible with the `raster` package. If `time_integrate`, the data can be loaded with `raster()`. If `!time_integrate`, the data can be loaded with `brick()`, which contains the POSIX time in the Z dimension (accessed with `getZ()`).
+Footprints are packaged and saved in a compressed .nc file with the naming convention `YYYYMMDDHH_LONG_LATI_ZAGL_foot.nc`. This object contains information about the model domain, the grid resolution, and footprints per timestep (if `!time_integrate`). For those familiar with raster operations, the default output is compatible with the `raster` package. If `time_integrate`, the data can be loaded with `raster()`. If `!time_integrate`, the data can be loaded with `brick()`, which contains the POSIX time (UTC seconds since 1970-01-01) in the Z dimension (accessed with `getZ()`).
 
 For more information about raster manipulation, the [Raster R package](https://geoscripting-wur.github.io/IntroToRaster/) is a good place to start.

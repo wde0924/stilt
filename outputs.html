@@ -235,7 +235,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </div>
 <div id="footprint-.nc" class="section level2">
 <h2><span class="header-section-number">5.2</span> Footprint .nc</h2>
-<p>Footprints are packaged and saved in a compressed .nc file with the naming convention <code>YYYYMMDDHH_LONG_LATI_ZAGL_foot.nc</code>. This object contains information about the model domain, the grid resolution, and footprints per timestep (if <code>!time_integrate</code>). For those familiar with raster operations, the default output is compatible with the <code>raster</code> package. If <code>time_integrate</code>, the data can be loaded with <code>raster()</code>. If <code>!time_integrate</code>, the data can be loaded with <code>brick()</code>, which contains the POSIX time in the Z dimension (accessed with <code>getZ()</code>).</p>
+<p>Footprints are packaged and saved in a compressed .nc file with the naming convention <code>YYYYMMDDHH_LONG_LATI_ZAGL_foot.nc</code>. This object contains information about the model domain, the grid resolution, and footprints per timestep (if <code>!time_integrate</code>). For those familiar with raster operations, the default output is compatible with the <code>raster</code> package. If <code>time_integrate</code>, the data can be loaded with <code>raster()</code>. If <code>!time_integrate</code>, the data can be loaded with <code>brick()</code>, which contains the POSIX time (UTC seconds since 1970-01-01) in the Z dimension (accessed with <code>getZ()</code>).</p>
 <p>For more information about raster manipulation, the <a href="https://geoscripting-wur.github.io/IntroToRaster/">Raster R package</a> is a good place to start.</p>
 
 </div>
