@@ -32,6 +32,7 @@ Arg               | Description
 
 
 ## Meteorological data input
+
 Arg               | Description
 ------------------|-------------------------------------------------------------------------
 `met_directory`   | Full directory path in which ARL compatible meteorological data files can be found
