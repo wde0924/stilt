@@ -64,56 +64,8 @@ str(out)
 Particle trajectory data is stored in a data frame with columns corresponding with varsiwant and can be accessed with `out$particle`{.r}.
 
 
-## Footprint .rds
+## Footprint .nc
 
-Footprints are packaged and saved in a compressed .rds file with the naming convention `YYYYMMDDHH_LONG_LATI_ZAGL_foot.rds`. This object contains information about the model domain, the grid resolution, and footprints per timestep (if `!time_integrate`).
-
-This object is structured as
-
-```{r, eval = F}
-out <- readRDS('YYYYMMDDHH_LONG_LATI_ZAGL_foot.rds')
-str(out)
-# List of 4
-#  $ lati:List of 4
-#   ..$ unit  : chr "Degrees"
-#   ..$ res   : num 0.01
-#   ..$ extent: num [1:2] 39 42
-#   ..$ data  : num [1:300] 42 42 42 42 42 ...
-#  $ long:List of 4
-#   ..$ unit  : chr "Degrees"
-#   ..$ res   : num 0.01
-#   ..$ extent: num [1:2] -114 -110
-#   ..$ data  : num [1:450] -114 -114 -114 -114 -114 ...
-#  $ time:List of 2
-#   ..$ unit: chr "POSIXct Time"
-#   ..$ data: POSIXct[1:500], format: "2015-06-15 13:48:00" "2015-06-15 13:51:00" ...
-#  $ foot:List of 3
-#   ..$ unit: chr "ppm umol-1 m2 s"
-#   ..$ dims: chr [1:3] "lati" "long" "time"
-#   ..$ data: num [1:300, 1:450, 1:500] 0 0 0 0 0 0 0 0 0 0 ...
-```
-
-To convert the output to a raster object, load the data into R and use the following sample code as a framework.
-
-```r
-library(raster)
-out <- readRDS('YYYYMMDDHH_LONG_LATI_ZAGL_foot.rds')
-
-# 3-dimensional raster brick for output with discrete time steps
-b <- brick(extent(xmn, xmx, ymn, ymx),
-           crs = '+proj=longlat +ellps=WGS84')
-dim(b) <- dim(out$foot$data)
-b <- setValues(b, out$foot$data)
-b <- setZ(b, out$time$data, 'Time')
-# Time integrate for plotting
-plot(sum(b))
-
-# 1-demensional raster layer time integrated output
-r <- raster(extent(xmn, xmx, ymn, ymx),
-            crs = '+proj=longlat +ellps=WGS84')
-dim(r) <- dim(out$foot$data)
-r <- setValues(r, out$foot$data)
-plot(r)
-```
+Footprints are packaged and saved in a compressed .nc file with the naming convention `YYYYMMDDHH_LONG_LATI_ZAGL_foot.nc`. This object contains information about the model domain, the grid resolution, and footprints per timestep (if `!time_integrate`). For those familiar with raster operations, the default output is compatible with the `raster` package. If `time_integrate`, the data can be loaded with `raster()`. If `!time_integrate`, the data can be loaded with `brick()`, which contains the POSIX time in the Z dimension (accessed with `getZ()`).
 
 For more information about raster manipulation, the [Raster R package](https://geoscripting-wur.github.io/IntroToRaster/) is a good place to start.
