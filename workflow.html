@@ -271,6 +271,10 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <td><code>met_file_format</code></td>
 <td><code>strftime</code> compatible file naming convention to identify meteorological data files necessary for the timing of the simulation, such as <code>%Y%m%d.%Hz.hrrra</code>. Also accepts wildcards that match regular expression patterns passed to <code>dir()</code>, such as <code>wrfout_d0*_jul.arl</code></td>
 </tr>
+<tr class="odd">
+<td><code>n_met_min</code></td>
+<td>Minimum number of meteorological data files with which to proceed with simulation. Useful for capturing missing periods. For a -24 hour simulation using the 6 hour HRRR met data files, <code>n_met_min</code> should be set to 5, since <code>find_met_files()</code> ensures that data before and after the simulation is included.</td>
+</tr>
 </tbody>
 </table>
 </div>

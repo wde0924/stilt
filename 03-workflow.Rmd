@@ -36,6 +36,7 @@ Arg               | Description
 ------------------|-------------------------------------------------------------------------
 `met_directory`   | Full directory path in which ARL compatible meteorological data files can be found
 `met_file_format` | `strftime` compatible file naming convention to identify meteorological data files necessary for the timing of the simulation, such as `%Y%m%d.%Hz.hrrra`. Also accepts wildcards that match regular expression patterns passed to `dir()`, such as `wrfout_d0*_jul.arl`
+`n_met_min`       | Minimum number of meteorological data files with which to proceed with simulation. Useful for capturing missing periods. For a -24 hour simulation using the 6 hour HRRR met data files, `n_met_min` should be set to 5, since `find_met_files()` ensures that data before and after the simulation is included.
 
 
 ## Model control
