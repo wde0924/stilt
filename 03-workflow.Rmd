@@ -46,7 +46,8 @@ Arg             | Description
 `n_hours` | Number of hours to run each simulation; negative indicates backward in time
 `numpar` | number of particles to be run; defaults to 200
 `outdt` | interval [min] to output data to PARTICLE.DAT; defaults to 0.0, which outputs at every timestep
-`run_trajec`      | Logical indicating whether to produce new trajectories with `hymodelc`. If FALSE, will load the previous `STILT_OUTPUT.rds` for regridding purposes
+`run_trajec` | Logical indicating whether to produce new trajectories with `hymodelc`. If FALSE, will load the previous `STILT_OUTPUT.rds` for regridding purposes
+`timeout` | number of seconds to allow hymodelc to complete before sending SIGTERM and moving to the next simulation; defaults to 3600 (1 hour)
 `varsiwant` | character vector of 4-letter hymodelc variables. Options include `NULL` for all variables, or a vector containing a minimum of `c('time', 'indx', 'lati', 'long', 'zagl', 'foot')` and optionally containing 'sigw', 'tlgr', 'zsfc', 'icdx', 'temp', 'samt', 'shtf', 'tcld', 'dmas', 'dens', 'rhfr', 'sphu', 'solw', 'lcld', 'zloc', 'dswf', 'wout', 'mlht', 'rain', 'crai'
 
 

@@ -309,6 +309,10 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <td>Logical indicating whether to produce new trajectories with <code>hymodelc</code>. If FALSE, will load the previous <code>STILT_OUTPUT.rds</code> for regridding purposes</td>
 </tr>
 <tr class="even">
+<td><code>timeout</code></td>
+<td>number of seconds to allow hymodelc to complete before sending SIGTERM and moving to the next simulation; defaults to 3600 (1 hour)</td>
+</tr>
+<tr class="odd">
 <td><code>varsiwant</code></td>
 <td>character vector of 4-letter hymodelc variables. Options include <code>NULL</code> for all variables, or a vector containing a minimum of <code>c('time', 'indx', 'lati', 'long', 'zagl', 'foot')</code> and optionally containing ‘sigw’, ‘tlgr’, ‘zsfc’, ‘icdx’, ‘temp’, ‘samt’, ‘shtf’, ‘tcld’, ‘dmas’, ‘dens’, ‘rhfr’, ‘sphu’, ‘solw’, ‘lcld’, ‘zloc’, ‘dswf’, ‘wout’, ‘mlht’, ‘rain’, ‘crai’</td>
 </tr>
