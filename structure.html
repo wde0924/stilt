@@ -157,7 +157,13 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 fortran/
   ...
 out/
-  #_yyyymmddHH_lati_long_zagl
+  yyyymmddHH_lati_long_zagl
+    yyyymmddHH_lati_long_zagl_traj.rds
+    yyyymmddHH_lati_long_zagl_foot.nc
+    hymodelc
+    SETUP.CFG
+    CONTROL
+    ...
   ...
 r/
   src/
@@ -167,27 +173,30 @@ r/
 setup</code></pre>
 <div id="exe" class="section level2">
 <h2><span class="header-section-number">3.1</span> exe/</h2>
-<p>Location for the compiled <code>hymodelc</code> executable as well as shared model configuration files, such as <code>ASCDATA.CFG</code>, <code>CONC.CFG</code>, <code>LANDUSE.ASC</code>, <code>ROUGLEN.ASC</code>, etc.</p>
+<p>Location for the compiled <code>hymodelc</code> executable as well as shared model configuration files, such as <code>ASCDATA.CFG</code>, <code>CONC.CFG</code>, <code>LANDUSE.ASC</code>, <code>ROUGLEN.ASC</code>, etc. These files are simlinked to each simulation (<code>out/</code>) directory.</p>
 </div>
 <div id="fortran" class="section level2">
 <h2><span class="header-section-number">3.2</span> fortran/</h2>
-<p><code>hymodelc</code> fortran source code and make file used for compilation. <code>hymodelc</code> can be compiled manually with</p>
+<p><code>hymodelc</code> fortran source code and make file used for compilation. Compilation is most easily done with the included <code>setup</code> script (which runs as part of the standard <code class="sourceCode r">uataq::<span class="kw">stilt_init</span>()</code> installation) or manually with</p>
 <pre><code>cd fortran
 make
 mv hymodelc ../exe/hymodelc
 cd ..
 chmod +x exe/hymodelc</code></pre>
-<p>or using the included <code>setup</code> script (found in the base directory) which executes the above commands.</p>
+<p><code>permute.f90</code> contains a spatial permutation subroutine that applies the particle influences using variable bandwidth gaussian kernels. This is designed to be compiled as an R-compatible dynamic link library, which allows it to be used interactively within the R environment. Compilation is most easily done with the included <code>setup</code> script (which runs as part of the standard <code>uataq::stilt_init()</code> installation) or manually with</p>
+<pre><code>cd fortran
+R CMD SHLIB permute.f90
+mv permute.so ../r/src/permute.so</code></pre>
 </div>
 <div id="out" class="section level2">
 <h2><span class="header-section-number">3.3</span> out/</h2>
-<p>Initially empty, this folder propagates subdirectories when simulations begin. See <a href="outputs.html#outputs">Outputs</a>.</p>
+<p>Initially empty, this folder propagates subdirectories with the naming convention <code>yyyymmddHH_lati_long_zagl</code> when simulations begin. See <a href="outputs.html#outputs">Outputs</a>.</p>
 </div>
 <div id="r" class="section level2">
 <h2><span class="header-section-number">3.4</span> r/</h2>
 <p><code>run_stilt.r</code> is used to adjust model parameters, execute the simulations, and produce upstream influence footprints. See <a href="workflow.html#workflow">Workflow</a>.</p>
-<p><code>dependencies.r</code> is used to load the necessary functions and packages for <code>run_stilt.r</code> and replicates the functions available in the R environment across multiple processes running on separate cores/nodes.</p>
-<p>The <code>src/</code> subdirectory contains the bulk of the STILT source code but should not need to be modified. Each file contains a single R function with metadata documenting function arguments and usage instructions for making programatic adjustment to STILT’s workflow.</p>
+<p><code>dependencies.r</code> is used to load the necessary functions and packages for <code>run_stilt.r</code> and is loaded on each forked process during parallelization.</p>
+<p>The <code>src/</code> subdirectory contains the bulk of the R source code but should not need to be modified. Each file contains a single R function with metadata documenting function arguments and usage instructions for making programatic adjustments to STILT’s workflow.</p>
 
 </div>
 </div>

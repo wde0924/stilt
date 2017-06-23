@@ -9,7 +9,13 @@ exe/
 fortran/
   ...
 out/
-  #_yyyymmddHH_lati_long_zagl
+  yyyymmddHH_lati_long_zagl
+    yyyymmddHH_lati_long_zagl_traj.rds
+    yyyymmddHH_lati_long_zagl_foot.nc
+    hymodelc
+    SETUP.CFG
+    CONTROL
+    ...
   ...
 r/
   src/
@@ -21,11 +27,11 @@ setup
 
 ## exe/
 
-Location for the compiled `hymodelc` executable as well as shared model configuration files, such as `ASCDATA.CFG`, `CONC.CFG`, `LANDUSE.ASC`, `ROUGLEN.ASC`, etc.
+Location for the compiled `hymodelc` executable as well as shared model configuration files, such as `ASCDATA.CFG`, `CONC.CFG`, `LANDUSE.ASC`, `ROUGLEN.ASC`, etc. These files are simlinked to each simulation (`out/`) directory.
 
 ## fortran/
 
-`hymodelc` fortran source code and make file used for compilation. `hymodelc` can be compiled manually with
+`hymodelc` fortran source code and make file used for compilation. Compilation is most easily done with the included `setup` script (which runs as part of the standard `uataq::stilt_init()`{.r} installation) or manually with
 
 ```
 cd fortran
@@ -35,18 +41,24 @@ cd ..
 chmod +x exe/hymodelc
 ```
 
-or using the included `setup` script (found in the base directory) which executes the above commands.
+`permute.f90` contains a spatial permutation subroutine that applies the particle influences using variable bandwidth gaussian kernels. This is designed to be compiled as an R-compatible dynamic link library, which allows it to be used interactively within the R environment. Compilation is most easily done with the included `setup` script (which runs as part of the standard `uataq::stilt_init()` installation) or manually with
+
+```
+cd fortran
+R CMD SHLIB permute.f90
+mv permute.so ../r/src/permute.so
+```
 
 ## out/
 
-Initially empty, this folder propagates subdirectories when simulations begin. See [Outputs](#outputs).
+Initially empty, this folder propagates subdirectories with the naming convention `yyyymmddHH_lati_long_zagl` when simulations begin. See [Outputs](#outputs).
 
 
 ## r/
 
 `run_stilt.r` is used to adjust model parameters, execute the simulations, and produce upstream influence footprints. See [Workflow](#workflow).
 
-`dependencies.r` is used to load the necessary functions and packages for `run_stilt.r` and replicates the functions available in the R environment across multiple processes running on separate cores/nodes.
+`dependencies.r` is used to load the necessary functions and packages for `run_stilt.r` and is loaded on each forked process during parallelization.
 
-The `src/` subdirectory contains the bulk of the STILT source code but should not need to be modified. Each file contains a single R function with metadata documenting function arguments and usage instructions for making programatic adjustment to STILT's workflow.
+The `src/` subdirectory contains the bulk of the R source code but should not need to be modified. Each file contains a single R function with metadata documenting function arguments and usage instructions for making programatic adjustments to STILT's workflow.
 

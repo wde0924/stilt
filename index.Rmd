@@ -12,6 +12,8 @@ documentclass: book
 
 This documentation is for for a version of the Stochastic Time Inverted Lagrangian Transport (STILT) model, available on [Github](https://github.com/benfasoli/stilt/).
 
+<img src="https://air.utah.edu/~benfasoli/img/stilt-heb.png" height=400></img>
+
 ## Quick-start {#quickstart}
 
 Done this before and just looking to start a new project?
