@@ -83,8 +83,7 @@ Arg             | Description
 `ymx` | grid end latitude, in degrees from -180 to 180
 `xres` | resolution for longitude grid, in degrees
 `yres` | resolution for latitude grid, in degrees
-`time_factor` | factor by which to linearly scale time dependence for footprint smoothing; 0 to disable, defaults to 1
-`distance_factor` | factor by which to linearly scale mean pairwise particle distance dependence for footprint smoothing; 0 to disable, defaults to 1
+`smooth_factor` | factor by which to linearly scale footprint smoothing; 0 to disable, defaults to 1
 `time_integrate` | logical indicating whether to integrate footprint over time or retain discrete time steps
 
 
