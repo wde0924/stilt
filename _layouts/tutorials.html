@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% include head.html %}
+
+<body id="page-top">
+  {% include nav.html %}
+
+  <section id="tutorial" class="tutorial">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12 text-center">
+          <h2 class="section-heading">STILT TUTORIALS</h2>
+          <p>
+            Run STILT in just minutes. Choose a tutorial below.
+          </p>
+          <hr>
+          <br><br>
+        </div>
+      </div>
+      {% include tutorial-select.html %}
+      {% include wbb-new.html %}
+      {% include wbb-exp.html %}
+    </div>
+  </section>
+
+  {% include footer.html %}
+  {% include scripts.html %}
+</body>
+
+</html>
