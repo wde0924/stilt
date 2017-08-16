@@ -1,3 +1,0 @@
-output_dir: "."
-
-before_chapter_script: "_common.R"
