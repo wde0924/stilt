@@ -8,8 +8,8 @@
 
   <section id="tutorial" class="tutorial">
     <div class="container">
-      <div class="row">
-        <div class="col-lg-12 text-center">
+      <div class="col-sm-8 col-sm-offset-2">
+        <div class="text-center">
           <h2 class="section-heading">STILT TUTORIALS</h2>
           <p>
             Run STILT in just minutes. Choose a tutorial below.
@@ -18,7 +18,23 @@
           <br><br>
         </div>
       </div>
-      {% include tutorial-select.html %}
+
+      <div class="row">
+        <div class="col-sm-6 col-sm-offset-3">
+          <div class="service-box">
+            <i class="fa fa-4x fa-building wow bounceIn text-primary"></i>
+            <h3 class="text-primary"><b>WBB CO<sub>2</sub></b></h3>
+            <p>
+              Simulate a day of CO<sub>2</sub> concentrations for the William Browning Building at the University of Utah
+            </p>
+            <div class="btn-group btn-group-justified" role="group" aria-label="...">
+              <a role="button" class="btn btn-default" onclick="show('wbb-new')">I'm new</a>
+              <a role="button" class="btn btn-default" onclick="show('wbb-exp')">I've used STILT</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {% include wbb-new.html %}
       {% include wbb-exp.html %}
     </div>
@@ -26,6 +42,11 @@
 
   {% include footer.html %}
   {% include scripts.html %}
+
+  <!-- show/hide tutorial -->
+  <!-- add class="showhide" to section divs to enable show/hide -->
+  <script src="js/tutorials.js"></script>
+
 </body>
 
 </html>
