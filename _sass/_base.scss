@@ -231,11 +231,16 @@ section {
     }
 
     .steps {
+      margin-top: 50px;
       img {
         float: right;
         margin-top: 10px;
         width: 150px;
         border-radius: 50%;
+      }
+
+      .step {
+        height: 210px;
       }
     }
 
