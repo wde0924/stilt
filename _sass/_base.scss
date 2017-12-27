@@ -219,16 +219,29 @@ section {
   }
 
   &.about {
-    .service-box {
+    .animation-box {
       text-align: center;
-      i {
-        color: $theme-primary;
-        font-size: 36px;
-      }
       h3 {
         margin-top: 10px;
         margin-bottom: 10px;
       }
+    }
+
+    .img-box {
+      min-height: 250px;
+    }
+
+    .service-box {
+      text-align: center;
+      margin-top: 30px;
+      // i {
+      //   // color: $theme-primary;
+      //   font-size: 36px;
+      // }
+      // h3 {
+      //   margin-top: 10px;
+      //   margin-bottom: 10px;
+      // }
     }
 
     .steps {

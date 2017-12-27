@@ -26,7 +26,7 @@
         </div>
 
         <div class="row">
-          <div class="service-box">
+          <div class="animation-box">
             <div class="col-sm-6">
               <h3>Particles</h3>
               <p>STILT uses meteorological data to follow an ensemble of theoretical particles as they are transported backward in time through the atmosphere</p>
@@ -87,7 +87,68 @@
             </div>
           </div>
         </div>
-        <hr>
+
+        <hr><br>
+
+        <div class="text-center">
+          <div class="row">
+            <div class="col-sm-10 col-sm-offset-1">
+              <h2>STILT Improvements</h2>
+              <p>This distribution contains a completely redesigned STILT wrapper and proposes a centralized, collaborative platform for documentation and future development.</p>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-5 col-sm-offset-1">
+            <div class="service-box">
+              <div class="img-box">
+                <img width="250px;" src="img/kernel.png"></img>
+              </div>
+              <h3>Gaussian Kernel Footprints</h3>
+              <p>
+                Influence of particles is spatially distributed using gaussian kernels. This method agrees more closely with idealized brute-force cases over prior dynamic grid coarsening techniques.
+              </p>
+            </div>
+          </div>
+          <div class="col-sm-5 col-sm-offset-1">
+            <div class="service-box">
+              <div class="img-box">
+                <img style="width:175px; margin-top:40px;" src="img/parallel.png"></img>
+              </div>
+              <h3>Parallel Simulations</h3>
+              <p>
+                High level methods for single and multi-node parallelism take advantage of computing resources, enabling total simulation time to decrease linearly with the number of parallel threads.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-5 col-sm-offset-1">
+            <div class="service-box">
+              <div class="img-box">
+                <img style="width:250px;" src="img/dilution-height.png"></img>
+              </div>
+              <h3>Effective Dilution Depth</h3>
+              <p>
+                Nested gaussian plume model rescales the effective dilution depth for fluxes in the hyper near field. This increases the influence of fluxes originating close to the receptor.
+              </p>
+            </div>
+          </div>
+          <div class="col-sm-5 col-sm-offset-1">
+            <div class="service-box">
+              <div class="img-box">
+                <img style="width:150px; margin-top:30px;" src="img/code.png"></img>
+              </div>
+              <h3>Modernized Framework</h3>
+              <p>
+                Simple front end controls for transport and dispersion modeling, model parallelization, and footprint calculations provide a systematic, well-documented workflow.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <hr><br>
+
         <div class="action text-center">
           <h2>Ready to start?</h2>
           <p>Head to one of the following pages for more information</p>
