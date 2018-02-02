@@ -61,7 +61,7 @@ Arg               | Description
 Arg               | Description
 ------------------|-------------------------------------------------------------------------
 `met_directory`   | Full directory path in which ARL compatible meteorological data files can be found
-`met_file_format` | `strftime` compatible file naming convention to identify meteorological data files necessary for the timing of the simulation, such as `%Y%m%d.%Hz.hrrra`. Also accepts wildcards that match regular expression patterns passed to `dir()`, such as `wrfout_d0*_jul.arl`
+`met_file_format` | `strftime()` compatible file naming convention to identify meteorological data files necessary for the timing of the simulation, such as `%Y%m%d.%Hz.hrrra`. Also accepts wildcards that match regular expression patterns passed to `dir()`, such as `wrfout_d0*_jul.arl`
 `n_met_min`       | Minimum number of meteorological data files with which to proceed with simulation. Useful for capturing missing periods. For a -24 hour simulation using the 6 hour HRRR met data files, `n_met_min` should be set to 5, since `find_met_files()` ensures that data before and after the simulation is included.
 
 > NOAA publishes High Resolution Rapid Refresh (HRRR) mesoscale model data in the ARL packed format required for STILT at [ftp://arlftp.arlhq.noaa.gov/pub/archives/hrrr/](ftp://arlftp.arlhq.noaa.gov/pub/archives/hrrr/). This is often the easiest place to start but is only available after June 15, 2015. The coupling of the popular Weather Research and Forecasting (WRF) model with STILT is well documented by [Nehrkorn, 2010](https://link.springer.com/article/10.1007%2Fs00703-010-0068-x).

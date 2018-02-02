@@ -256,7 +256,7 @@ header {
 .inner {
   margin: 60px 20px;
   margin-bottom: 80px;
-  max-width: 850px;
+  max-width: 768px;
 
   @media(min-width: 768px) {
     margin: 60px auto;
@@ -267,6 +267,15 @@ header {
   @extend .content;
   @extend .inner;
   margin-top: 20px;
+}
+
+tr td {
+  min-width: 140px;
+  vertical-align: top;
+}
+
+blockquote {
+  margin-top: 10px;
 }
 
 /* Terminal window view */
