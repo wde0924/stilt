@@ -20,70 +20,67 @@ Fasoli, B., Bowling, D. R., Mitchell, L., Mendoza, D., and Lin, J.: Modeling spa
 Familiar with the workflow and ready to start a new STILT project?
 
 1. Initialize project with `Rscript -e "uataq::stilt_init('myproject')"`
-<!-- ![](/assets/terminal-new-project.png) -->
-<div class="terminal">
-  <div class="terminal-osx-button"></div>
-  <div class="terminal-osx-button"></div>
-  <div class="terminal-osx-button"></div>
-  <div class="terminal-command">
-    Rscript -e "uataq::stilt_init('myproject')"
-  </div>
-  <div class="terminal-return">
-    Cloning into 'stilt'...<br>
-    remote: Counting objects: 1712, done.<br>
-    remote: Compressing objects: 100% (275/275), done.<br>
-    remote: Total 1712 (delta 71), reused 267 (delta 39), pack-reused 1384<br>
-    Receiving objects: 100% (1712/1712), 32.85 MiB | 8.57 MiB/s, done.<br>
-    Resolving deltas: 100% (652/652), done.<br>
-    Checking connectivity... done.<br>
-    gfortran  -fpic -g -O2 -fstack-protector --param=ssp-buffer-size=4  -c  permute.f90 -o permute.o<br>
-    gfortran -shared -L/usr/lib/R/lib -Wl,-Bsymbolic-functions -Wl,-z,relro -o permute.so permute.o -L/usr/lib/R/lib -lR<br>
-    gfortran -c -O2 -fconvert=big-endian -frecord-marker=4 -fbounds-check -ffree-form -I. funits.f<br>
-    ...    
-  </div>
-</div>
+    <div class="terminal">
+      <div class="terminal-osx-button"></div>
+      <div class="terminal-osx-button"></div>
+      <div class="terminal-osx-button"></div>
+      <div class="terminal-command">
+        Rscript -e "uataq::stilt_init('myproject')"
+      </div>
+      <div class="terminal-return">
+        Cloning into 'stilt'...<br>
+        remote: Counting objects: 1712, done.<br>
+        remote: Compressing objects: 100% (275/275), done.<br>
+        remote: Total 1712 (delta 71), reused 267 (delta 39), pack-reused 1384<br>
+        Receiving objects: 100% (1712/1712), 32.85 MiB | 8.57 MiB/s, done.<br>
+        Resolving deltas: 100% (652/652), done.<br>
+        Checking connectivity... done.<br>
+        gfortran  -fpic -g -O2 -fstack-protector --param=ssp-buffer-size=4  -c  permute.f90 -o permute.o<br>
+        gfortran -shared -L/usr/lib/R/lib -Wl,-Bsymbolic-functions -Wl,-z,relro -o permute.so permute.o -L/usr/lib/R/lib -lR<br>
+        gfortran -c -O2 -fconvert=big-endian -frecord-marker=4 -fbounds-check -ffree-form -I. funits.f<br>
+        ...    
+      </div>
+    </div>
 
 2. Edit settings in `r/run_stilt.r`
-<!-- ![](/assets/terminal-edit-runstilt.png) -->
-<div class="terminal">
-  <div class="terminal-osx-button"></div>
-  <div class="terminal-osx-button"></div>
-  <div class="terminal-osx-button"></div>
-  <div class="terminal-command">
-    cd myproject
-  </div>
-  <div class="terminal-command">
-    ls
-  </div>
-  <div class="terminal-return">
-    exe  fortran  out  r  README.md  setup  stilt
-  </div>
-  <div class="terminal-command">
-    vim r/run_stilt.r
-  </div>
-  <div class="terminal-return">
-    ...
-  </div>
-</div>
+    <div class="terminal">
+      <div class="terminal-osx-button"></div>
+      <div class="terminal-osx-button"></div>
+      <div class="terminal-osx-button"></div>
+      <div class="terminal-command">
+        cd myproject
+      </div>
+      <div class="terminal-command">
+        ls
+      </div>
+      <div class="terminal-return">
+        exe  fortran  out  r  README.md  setup  stilt
+      </div>
+      <div class="terminal-command">
+        vim r/run_stilt.r
+      </div>
+      <div class="terminal-return">
+        ...
+      </div>
+    </div>
 
 3. Run model with `Rscript r/run_stilt.r`
-<!-- ![](/assets/terminal-run-stilt.png) -->
-<div class="terminal">
-  <div class="terminal-osx-button"></div>
-  <div class="terminal-osx-button"></div>
-  <div class="terminal-osx-button"></div>
-  <div class="terminal-command">
-    Rscript r/run_stilt.r
-  </div>
-  <div class="terminal-return">
-    Initializing STILT<br>
-    Number of receptors: 1<br>
-    Number of parallel threads: 1<br>
-    Estimated footprint grid RAM allocation: 314 MB<br>
-    Parallelization disabled. Executing simulations sequentially...<br>
-    <br>
-    Running simulation ID:   2015061822_-111.980323_40.782561_5
-  </div>
-</div>
+    <div class="terminal">
+      <div class="terminal-osx-button"></div>
+      <div class="terminal-osx-button"></div>
+      <div class="terminal-osx-button"></div>
+      <div class="terminal-command">
+        Rscript r/run_stilt.r
+      </div>
+      <div class="terminal-return">
+        Initializing STILT<br>
+        Number of receptors: 1<br>
+        Number of parallel threads: 1<br>
+        Estimated footprint grid RAM allocation: 314 MB<br>
+        Parallelization disabled. Executing simulations sequentially...<br>
+        <br>
+        Running simulation ID:   2015061822_-111.980323_40.782561_5
+      </div>
+    </div>
 
 To get started, see [Installation]({{"/docs/installation.html"|relative_url}}).
