@@ -3,18 +3,8 @@ title: STILT Model
 email:
 description: Stochastic Time-Inverted Lagrangian Transport Model
 
-baseurl: "" # the subpath of your site, e.g. /blog/ (If you use organization leave empty)
-url: "https://uataq.github.io/stilt/" # the base hostname & protocol for your site
-
-#Google Ad Words Data from scripts code (using Google responsive options) and ad client
-data-ad-slot:
-data-ad-client:
-google_ad_client:
-
-google_analytics:
-addthis_id:
-disqus_account:
-
+baseurl: "/stilt/" # the subpath of your site, e.g. /blog/
+url: "https://uataq.github.io" # the base hostname & protocol for your site
 
 social:
   - title: github
@@ -24,6 +14,3 @@ social:
 markdown: kramdown
 highlighter: rouge
 exclude: ["less","node_modules","Gruntfile.js","package.json","README.md"]
-
-# plugins: [jekyll-paginate, jekyll-feed]
-# Build settings

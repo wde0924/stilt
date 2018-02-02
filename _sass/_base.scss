@@ -30,10 +30,10 @@ a {
   -moz-transition: all 0.35s;
   transition: all 0.35s;
   color: $theme-primary;
-  &:hover, &:focus {
-    color: $theme-primary;
-    text-decoration: none;
-  }
+  // &:hover, &:focus {
+  //   color: $theme-primary;
+  //   text-decoration: none;
+  // }
 }
 
 hr {
@@ -105,9 +105,6 @@ p {
 }
 
 @media (min-width: 768px) {
-  ul.nav li.dropdown:hover > ul.dropdown-menu {
-    display: block;
-  }
   ul.dropdown-menu, ul.dropdown-menu > li {
     margin: 5px 0 5px 0;
     background-color: $theme-secondary;
@@ -135,12 +132,33 @@ p {
   background: $theme-secondary;
 }
 
+.navbar-collapse.in {
+    overflow-y: visible; /* Bootstrap default is "auto" */
+}
+
+.navbar-collapse {
+  border-top: none;
+}
+
+#nav-docs {
+  margin-top: 0;
+  padding-top: 0;
+
+  a:hover, a:active, a:focus {
+    background: #fff;
+    background-color: #fff;
+    color: $theme-primary;
+    font-weight: bolder;
+  }
+
+}
+
 header {
   position: relative;
   width: 100%;
   min-height: 100%;
   overflow-y: hidden;
-  color: white;
+  color: #fff;
   .header-content {
     text-align: center;
     padding: 0;
@@ -156,145 +174,166 @@ header {
         font-size: 16px;
         font-weight: lighter;
       }
-      i {
-        margin-top: 30px;
-      }
       a {
         margin-top: 15px;
       }
       h1 {
         margin-top: 0;
         margin-bottom: 30px;
-        font-size: 10px;
       }
       .btn {
         font-size: 12px;
       }
+      .btn-default {
+        min-width: 300px;
+      }
+      .fa-github {
+        margin-top: 30px;
+      }
     }
   }
 }
 
-// @media (min-width: 768px) {
-//   header .header-content > .header-content-inner {
-//     h1 {
-//       // margin-bottom: 100px;
-//       font-size: 100px;
-//     }
-//   }
-// }
 
+.content {
+  padding-top: 50px;
+  overflow-x: hidden;
 
-.navbar-collapse.in {
-    overflow-y: visible; /* Bootstrap default is "auto" */
-}
-
-section {
-  padding: 100px 0;
-  h2 {
-    font-size: 50px;
-    &.section-heading {
-      margin-top: 0;
-    }
-  }
   p {
     font-size: 14px;
   }
   hr {
-    // border-color: black;
     max-width: 40%;
   }
-
-  &.tutorial {
-    .service-box {
-      // min-height: 150px;
-      a:not(:first-child) {
-        border-left: 1px white solid;
-      }
-      text-align: center;
-    }
-    .showhide {
-      margin-top: 50px;
-      display: none;
-    }
+  video {
+    width: 100%;
   }
 
-  &.about {
-    .animation-box {
-      text-align: center;
-      h3 {
-        margin-top: 10px;
-        margin-bottom: 10px;
-      }
-    }
+  .container-light {
+    background-color: #fff;
+  }
 
-    .img-box {
-      min-height: 250px;
-    }
+  .container-dark {
+    padding-top: 1px;
+    padding-bottom: 1px;
+    background-color: $theme-secondary;
+    color: #fff;
+  }
 
-    .service-box {
-      text-align: center;
-      margin-top: 30px;
-      // i {
-      //   // color: $theme-primary;
-      //   font-size: 36px;
-      // }
-      // h3 {
-      //   margin-top: 10px;
-      //   margin-bottom: 10px;
-      // }
+  .icon-box {
+    img {
+      height: 150px;
+      width: 150px;
     }
+    text-align: center;
+  }
 
-    .steps {
-      margin-top: 50px;
-      img {
+  .section-title {
+    text-align: center;
+    margin: auto;
+    margin-bottom: 20px;
+    max-width: 600px;
+  }
+
+  .steps {
+    img {
+      border-radius: 50%;
+      float: center;
+      margin: 10px auto;
+      height: 150px;
+      width: 150px;
+      @media(min-width: 768px) {
         float: right;
-        margin-top: 10px;
-        width: 150px;
-        border-radius: 50%;
-      }
-
-      .step {
-        min-height: 210px;
       }
     }
 
-    .action {
-      .btn-xl {
-        font-size: 12px;
-      }
+    .step {
+      min-height: 210px;
     }
+  }
+}
+
+.inner {
+  margin: 60px 20px;
+  margin-bottom: 80px;
+  max-width: 850px;
+
+  @media(min-width: 768px) {
+    margin: 60px auto;
+  }
+}
+
+.content-docs {
+  @extend .content;
+  @extend .inner;
+  margin-top: 20px;
+}
+
+/* Terminal window view */
+.terminal {
+  margin: 20px 0 20px 0;
+  width: 100%;
+  padding: 10px 40px 30px 20px;
+  border-radius: 5px;
+  background-color: #2b2e3a;
+  box-shadow: 0 5px 5px rgba(0,0,0,0.2);
+  color: #dee0e8;
+  font-family: 'Menlo', monospace;
+  font-size: 13px;
+  overflow: hidden;
+}
+.terminal .terminal-osx-button {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 0;
+  padding: 0;
+  border-radius: 50%;
+}
+.terminal .terminal-osx-button:nth-child(1) {
+  background-color: #F55E57;
+}
+.terminal .terminal-osx-button:nth-child(2) {
+  background-color: #F9BD2F;
+}
+.terminal .terminal-osx-button:nth-child(3) {
+  background-color: #3CC940;
+}
+.terminal .terminal-command {
+  margin: 5px 0 5px 0;
+}
+.terminal .terminal-command::before {
+  content: '→ ';
+  color: #717899;
+  font-size: 15px;
+}
+.terminal .terminal-return {
+  padding-left: 18px;
+  line-height: 1.3;
+}
+@media (min-width: 768px) {
+  .terminal {
+    margin: 20px 5% 20px 5%;
+    width: 90%;
   }
 }
 
 footer {
-  padding: 25px 0;
-  width: 100%;
-  height: 60px;
+  @extend .content;
+  margin-top: 0;
+  padding-top: 0;
   text-align: center;
   p {
-    font-size: 12px;
-    margin: 0;
-  }
-  ul {
-    margin-bottom: 0;
-    li a {
-      font-size: 12px;
-      color: rgba(255, 255, 255, 0.3);
-      &:hover, &:focus, &:active, &.active {
-        text-decoration: none;
-      }
-    }
-  }
-  .container {
-    margin-bottom: 25px;
+    color: lighten(#000, 30);
+    font-size: 13px;
   }
 }
 
-.bg-primary {
-  background: $theme-primary;
-  background: -webkit-linear-gradient($theme-primary, $theme-secondary);
-  background: linear-gradient($theme-primary, $theme-secondary);
-}
+// .bg-primary {
+//   background: $theme-primary;
+//   background: -webkit-linear-gradient($theme-primary, $theme-secondary);
+//   background: linear-gradient($theme-primary, $theme-secondary);
+// }
 
 .text-primary {
   color: $theme-primary;
@@ -348,6 +387,7 @@ footer {
 }
 
 img {
+  width: 100%;
   &::selection, &::-moz-selection {
     color: white;
     background: transparent;
