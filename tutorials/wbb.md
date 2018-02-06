@@ -208,11 +208,6 @@ To convolve the footprints with emissions estimates,
   <div class="terminal-command">
     Rscript tutorial.r
   </div>
-  <div class="terminal-return">
-    1<br>
-    2<br>
-    ...
-  </div>
 </div>
 
 which will output `timeseries.png` to the current directory showing the modeled concentrations
