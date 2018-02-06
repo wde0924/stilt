@@ -279,50 +279,49 @@ blockquote {
 
 /* Terminal window view */
 .terminal {
-  margin: 20px 0 20px 0;
-  width: 100%;
-  padding: 10px 40px 30px 20px;
-  border-radius: 5px;
   background-color: #2b2e3a;
+  border-radius: 5px;
   box-shadow: 0 5px 5px rgba(0,0,0,0.2);
   color: #dee0e8;
   font-family: 'Menlo', monospace;
   font-size: 13px;
+  margin: 20px auto;
   overflow: hidden;
-}
-.terminal .terminal-osx-button {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  margin-right: 0;
-  padding: 0;
-  border-radius: 50%;
-}
-.terminal .terminal-osx-button:nth-child(1) {
-  background-color: #F55E57;
-}
-.terminal .terminal-osx-button:nth-child(2) {
-  background-color: #F9BD2F;
-}
-.terminal .terminal-osx-button:nth-child(3) {
-  background-color: #3CC940;
-}
-.terminal .terminal-command {
-  margin: 5px 0 5px 0;
-}
-.terminal .terminal-command::before {
-  content: '→ ';
-  color: #717899;
-  font-size: 15px;
-}
-.terminal .terminal-return {
-  padding-left: 18px;
-  line-height: 1.3;
-}
-@media (min-width: 768px) {
-  .terminal {
-    margin: 20px 5% 20px 5%;
-    width: 90%;
+  padding: 15px 40px 30px 20px;
+  width: 100%;
+  @media (min-width: 768px) {
+    width: 80%;
+  }
+
+ .terminal-osx-button {
+    border-radius: 50%;
+    display: inline-block;
+    height: 12px;
+    margin-bottom: 3px;
+    margin-right: 0;
+    padding: 0;
+    width: 12px;
+  }
+  .terminal-osx-button:nth-child(1) {
+    background-color: #F55E57;
+  }
+  .terminal-osx-button:nth-child(2) {
+    background-color: #F9BD2F;
+  }
+  .terminal-osx-button:nth-child(3) {
+    background-color: #3CC940;
+  }
+  .terminal-command {
+    margin: 5px 0 5px 0;
+  }
+  .terminal-command::before {
+    color: #717899;
+    content: '→ ';
+    font-size: 15px;
+  }
+  .terminal-return {
+    line-height: 1.3;
+    padding-left: 18px;
   }
 }
 
@@ -336,12 +335,6 @@ footer {
     font-size: 13px;
   }
 }
-
-// .bg-primary {
-//   background: $theme-primary;
-//   background: -webkit-linear-gradient($theme-primary, $theme-secondary);
-//   background: linear-gradient($theme-primary, $theme-secondary);
-// }
 
 .text-primary {
   color: $theme-primary;

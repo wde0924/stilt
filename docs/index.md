@@ -2,7 +2,7 @@
 layout: docs
 ---
 
-# STILT Documentation
+# STILT Docs
 
 This STILT documentation is intended for the modified Stochastic Time-Inverted Lagrangian Transport (STILT) model that includes an improved interface wrapper and enhancements improving the model's applicability to fine-scale measurement and flux interpretation.  
 
