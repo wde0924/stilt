@@ -11,6 +11,8 @@ Here, we'll simulate a day of carbon dioxide concentrations for the [UATAQ Lab](
 
 Let's start by checking to be sure the necessary dependencies are installed.
 
+> The University of Utah CHPC clusters use [modules](https://www.chpc.utah.edu/documentation/software/modules.php) to manage environment paths. To load dependencies within one of the CHPC clusters, you need to load the `netcdf-c` and `R` modules. You can run `module load netcdf-c R` in your current bash session or add it to the bottom of your shell configuration file (`.bashrc`) to load the dependencies at every login.
+
 We need R version 3.2.5 or higher, which you can find in the output from
 
 <div class="terminal">
