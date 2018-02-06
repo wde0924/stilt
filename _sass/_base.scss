@@ -346,25 +346,23 @@ footer {
 }
 
 .btn-outline {
-  color: white;
-  border-color: white;
   border: 1px solid;
-  &:hover, &:focus, &:active, &.active {
-    color: white;
+  border-color: #fff;
+  color: #fff;
+  &:hover, &:focus, &:active, &.visited {
     background-color: $theme-primary;
     border-color: $theme-primary;
+    color: #fff;
   }
 }
 
 .btn-default {
-  color: white;
-  border: 1px solid;
-  border-color: $theme-primary;
-  background-color: $theme-primary;
-  &:hover, &:focus, &:active, &.active {
-    color: white;
-    background-color: $theme-primary;
-    border-color: $theme-primary;
+  color: #fff;
+  border: none;
+  background: $theme-primary;
+  &:hover, &:focus, &:active, &.visited {
+    color: #fff !important;
+    background: lighten($theme-primary, 2) !important;
   }
 }
 
