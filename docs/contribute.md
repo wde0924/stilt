@@ -1,5 +1,6 @@
 ---
 layout: docs
+title: STILT Contributing
 ---
 
 # Contribute to the STILT project

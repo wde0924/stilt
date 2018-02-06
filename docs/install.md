@@ -1,5 +1,6 @@
 ---
 layout: docs
+title: STILT Installation
 ---
 
 # Fair Use Policy

@@ -141,12 +141,12 @@ p {
   border-top: none;
 }
 
-#nav-docs {
-  margin-top: 0;
-  padding-top: 0;
+.nav-secondary {
+  display: inline-block;
+  text-align: center;
 
   a:hover, a:active, a:focus {
-    background: transparent;
+    background: transparent !important;
     color: $theme-primary;
   }
 }
