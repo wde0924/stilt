@@ -4,6 +4,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="author" content="Ben Fasoli">
 
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-71060029-4"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-71060029-4');
+  </script>
+
   <title>{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}</title>
 
   <!-- Bootstrap Core CSS -->
