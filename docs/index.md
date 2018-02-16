@@ -84,4 +84,4 @@ Familiar with the workflow and ready to start a new STILT project?
       </div>
     </div>
 
-To get started, see [Installation]({{"/docs/installation.html"|relative_url}}).
+To get started, see [Installation]({{"/docs/install.html"|relative_url}}).
