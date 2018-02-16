@@ -19,6 +19,7 @@ We need R version 3.2.5 or higher, which you can find in the output from
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
+  <div class="terminal-lang">bash</div>
   <div class="terminal-command">
     Rscript --version
   </div>
@@ -27,14 +28,30 @@ We need R version 3.2.5 or higher, which you can find in the output from
   </div>
 </div>
 
-> If R is not found or the version is too old, you'll need to update R on your system before continuing
+> If R is not found or the version is too old, you'll need to update R on your system before continuing.
 
-To compile the `hymodelc` executable, the makefile will default to searching for pgf90. We can check if pfg90 is installed with
+STILT requires several R packages as helpers for file input/output, data manipulation, and parallel execution. We can install the dependencies in R with
 
 <div class="terminal">
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
+  <div class="terminal-lang">R</div>
+  <div class="terminal-command">
+    install.packages(c('devtools', 'dplyr', 'ncdf4', 'parallel', 'raster', 'rslurm'))
+  </div>
+  <div class="terminal-return">
+    ...
+  </div>
+</div>
+
+To compile the `hymodelc` executable, the makefile will default to searching for gfortran. We can check if gfortran is installed with
+
+<div class="terminal">
+  <div class="terminal-osx-button"></div>
+  <div class="terminal-osx-button"></div>
+  <div class="terminal-osx-button"></div>
+  <div class="terminal-lang">bash</div>
   <div class="terminal-command">
     which gfortran
   </div>
@@ -43,7 +60,7 @@ To compile the `hymodelc` executable, the makefile will default to searching for
   </div>
 </div>
 
-> If `which` returns something along the lines of `/usr/bin/which: no gfortran in...`, you need to make some changes for the compilation to be successful. To use pgf90, you'll need to add the executable to your shell's PATH. To use a different compiler, you'll need to manually clone the [STILT Github Repository](https://github.com/uataq/stilt), specify the compiler in `fortran/Makefile` using the `FC` variable, then run the `./setup` executable.
+> If `which` returns a path, then `gfortran` is installed. If `which` returns something along the lines of `/usr/bin/which: no gfortran in...`, you need to make some changes for the compilation to be successful. To use gfortran, you'll need to add the executable to your shell's PATH. To use a different compiler, you'll need to manually clone the [STILT Github Repository](https://github.com/uataq/stilt), specify the compiler in `fortran/Makefile` using the `FC` variable, then run the `./setup` executable. See the [documentation for installation]({{"/docs/install.html"|relative_url}}) for details.
 
 Last, we need to check if we have netCDF installed. Footprints are saved in compressed netCDF files, which reduces their file size and stores results with associated metadata so that the output is self documenting. We can check if netCDF is installed with
 
@@ -51,6 +68,7 @@ Last, we need to check if we have netCDF installed. Footprints are saved in comp
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
+  <div class="terminal-lang">bash</div>
   <div class="terminal-command">
     nc-config --all
   </div>
@@ -59,6 +77,8 @@ Last, we need to check if we have netCDF installed. Footprints are saved in comp
     ...
   </div>
 </div>
+
+> If `nc-config --all` returns build information about the netCDF configuration, then `netCDF` is installed. Otherwise, you will need to install netCDF on your system before continuing or (advanced) reconfigure the footprint file output extension in `simulation_step()` and `calc_footprint()` to return footprints using a different file format.
 
 
 ### Project setup
@@ -69,9 +89,7 @@ Now that we have the dependencies we need, let's start a new STILT project using
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
-  <div class="terminal-command">
-    if (!require('devtools')) install.packages('devtools')
-  </div>
+  <div class="terminal-lang">R</div>
   <div class="terminal-command">
     devtools::install_github('benfasoli/uataq')
   </div>
@@ -83,6 +101,7 @@ Then we can initialize our STILT project in our current directory within R using
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
+  <div class="terminal-lang">R</div>
   <div class="terminal-command">
     uataq::stilt_init('wbb-tutorial')
   </div>
@@ -94,6 +113,7 @@ To ensure everything compiled correctly, check to be sure you can find `hymodelc
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
+  <div class="terminal-lang">bash</div>
   <div class="terminal-command">
     cd wbb-tutorial
   </div>
@@ -116,6 +136,7 @@ The minimum we need to simulate the carbon dioxide concentration at WBB is (1) m
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
+  <div class="terminal-lang">bash</div>
   <div class="terminal-command">
     git clone https://github.com/uataq/stilt-tutorials
   </div>
@@ -136,7 +157,7 @@ which contains
 
 ### Configuration
 
-Now, we need to configure STILT for our example. Begin by opening `r/run_stilt.r` in a text editor.
+Now, we need to configure STILT for our example. Begin by opening `r/run_stilt.r` in a text editor. Unless otherwise described below, leave the simulation settings as their defaults.
 
 Set the simulation timing and receptor location to
 
@@ -180,6 +201,7 @@ That's it! We're all set to run the model. From the base directory of our STILT 
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
+  <div class="terminal-lang">bash</div>
   <div class="terminal-command">
     Rscript r/run_stilt.r
   </div>
@@ -202,6 +224,7 @@ To convolve the footprints with emissions estimates,
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
+  <div class="terminal-lang">bash</div>
   <div class="terminal-command">
     cd stilt-tutorials/01-wbb
   </div>
@@ -224,3 +247,6 @@ as well as maps for the average footprint (`average_footprint.png`) and average 
   <div class="col-sm-6">
     <img src="{{"/img/wbb-tutorial-average-contribution.jpg"|relative_url}}">
   </div>
+</div>
+
+> Note that the strange boundary of the contributed emissions is the extent of Salt Lake County, which is the area for which the emissions data exists and is non-NaN.

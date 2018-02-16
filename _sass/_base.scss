@@ -311,6 +311,12 @@ blockquote {
   .terminal-osx-button:nth-child(3) {
     background-color: #3CC940;
   }
+  .terminal-lang {
+    display: inline-block;
+    float: right;
+    margin: 0;
+    padding: 0;
+  }
   .terminal-command {
     margin: 5px 0 5px 0;
   }
