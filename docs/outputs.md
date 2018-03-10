@@ -57,7 +57,7 @@ Particle trajectory data is stored in a data frame with columns corresponding wi
 
 ### Gridded Footprints
 
-Footprints are packaged and saved in a compressed .nc file with the naming convention `YYYYMMDDHH_LONG_LATI_ZAGL_foot.nc`. This object contains information about the model domain, the grid resolution, and footprint values. This object is typically a three dimensional array with dimensions ordered (*x*, *y*, *z*). However, the object will only have dimensions (*x*, *y*) for time integrated footprints.
+Footprints are packaged and saved in a compressed .nc file conforming to the [Climate and Forecast (CF) metadata convention](http://cfconventions.org) with the naming convention `YYYYMMDDHH_LONG_LATI_ZAGL_foot.nc`. This object contains information about the model domain, the grid resolution, and footprint values. This object is typically a three dimensional array with dimensions ordered (*x*, *y*, *z*). However, the object will only have dimensions (*x*, *y*) for time integrated footprints.
 
 <div class="terminal">
   <div class="terminal-osx-button"></div>
@@ -69,38 +69,40 @@ Footprints are packaged and saved in a compressed .nc file with the naming conve
   <div class="terminal-return">
     netcdf 2015061822_-111.980323_40.782561_5_foot.nc {<br>
     dimensions:<br>
-    	longitude_center = 78 ;<br>
-    	latitude_center = 56 ;<br>
+    	lon = 78 ;<br>
+    	lat = 56 ;<br>
     	time = 10 ;<br>
       <br>
     variables:<br>
-    	double longitude_center(longitude_center) ;<br>
-    		longitude_center:units = "degrees_east" ;<br>
-    		longitude_center:long_name = "longitude_center" ;<br>
-    		longitude_center:position = "cell_center" ;<br>
+    	double lon(lon) ;<br>
+    		lon:units = "degrees_east" ;<br>
+    		lon:long_name = "cell center longitude" ;<br>
+    		lon:standard_name = "longitude" ;<br>
         <br>
-    	double latitude_center(latitude_center) ;<br>
-    		latitude_center:units = "degrees_north" ;<br>
-    		latitude_center:long_name = "latitude_center" ;<br>
-    		latitude_center:position = "cell_center" ;<br>
+    	double lat(lat) ;<br>
+    		lat:units = "degrees_north" ;<br>
+    		lat:long_name = "cell center latitude" ;<br>
+    		lat:standard_name = "latitude" ;<br>
         <br>
     	double time(time) ;<br>
-    		time:units = "seconds since 1970-01-01" ;<br>
+    		time:units = "seconds since 1970-01-01 00:00:00" ;<br>
     		time:long_name = "time" ;<br>
+        time:standard_name = "time" ;<br>
+        time:calendar = "standard" ;<br>
     		time:timezone = "UTC" ;<br>
         <br>
-    	float Footprint(time, latitude_center, longitude_center) ;<br>
-    		Footprint:units = "ppm (umol-1 m2 s)" ;<br>
-    		Footprint: FillValue = -1.f ;<br>
+    	float foot(time, lat, lon) ;<br>
+    		foot:units = "ppm (umol-1 m2 s)" ;<br>
+    		foot:FillValue = -1.f ;<br>
+        foot:standard_name = "footprint" ;<br>
+        foot:long_name = "footprint" ;<br>
         <br>
         // global attributes:<br>
     		:crs = "+proj=longlat +ellpsWGS84" ;<br>
     		:crs_format = "PROJ.4" ;<br>
-    		:Conventions = "CF-1.4" ;<br>
-    		:Title = "STILT Footprint Output" ;<br>
-    		:Compatibility = "raster::raster() and raster::brick()" ;<br>
-    		:Documentation = "github.com/uataq/stilt" ;<br>
-    		:Author = "Ben Fasoli" ;<br>
+    		:conventions = "CF-1.4" ;<br>
+        :documentation = "github.com/uataq/stilt" ;<br>
+    		:title = "STILT Footprint Output" ;<br>
     }
   </div>
 </div>
