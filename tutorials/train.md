@@ -16,6 +16,7 @@ Let's start a new STILT project using the [uataq R package](https://github.com/b
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
+  <div class="terminal-lang">bash</div>
   <div class="terminal-command">
     uataq::stilt_init('train-tutorial')
   </div>
@@ -27,6 +28,7 @@ To ensure everything compiled correctly, check to be sure you can find `hymodelc
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
+  <div class="terminal-lang">bash</div>
   <div class="terminal-command">
     cd train-tutorial
   </div>
@@ -51,6 +53,7 @@ You can download example data for this tutorial in the base directory of your ST
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
+  <div class="terminal-lang">bash</div>
   <div class="terminal-command">
     git clone https://github.com/uataq/stilt-tutorials
   </div>
@@ -127,6 +130,7 @@ That's it! We're all set to run the model. From the base directory of our STILT 
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
+  <div class="terminal-lang">bash</div>
   <div class="terminal-command">
     Rscript r/run_stilt.r
   </div>
@@ -153,6 +157,7 @@ To convolve the footprints with emissions estimates,
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
+  <div class="terminal-lang">bash</div>
   <div class="terminal-command">
     cd stilt-tutorials/02-train
   </div>

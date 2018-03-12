@@ -1,17 +1,17 @@
-.heading-font {
-  font-family: 'Catamaran', 'Helvetica', 'Arial', 'sans-serif';
-  font-weight: 200;
-  letter-spacing: 1px;
+.alt-font {
+  font-family: 'Lato', 'Helvetica', 'Arial', 'sans-serif';
+  text-transform: uppercase;
+  letter-spacing: 2px;
 }
 
 .body-font {
   font-family: 'Muli', 'Helvetica', 'Arial', 'sans-serif';
 }
 
-.alt-font {
-  font-family: 'Lato', 'Helvetica', 'Arial', 'sans-serif';
-  text-transform: uppercase;
-  letter-spacing: 2px;
+.heading-font {
+  font-family: 'Catamaran', 'Helvetica', 'Arial', 'sans-serif';
+  font-weight: 200;
+  letter-spacing: 1px;
 }
 
 html {
@@ -36,20 +36,20 @@ a {
   }
 }
 
-hr {
-  max-width: 100px;
-  margin: 25px auto 0;
-  border-width: 1px;
-  border-color: rgba(34, 34, 34, 0.1);
-  &.light {
-    border-color: white;
-  }
-}
-
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Catamaran', 'Helvetica', 'Arial', 'sans-serif';
   font-weight: 200;
   letter-spacing: 1px;
+}
+
+hr {
+  // max-width: 100px;
+  // margin: 25px auto 0;
+  border-width: 1px;
+  border-color: lighten($theme-primary, 25%);
+  &.light {
+    border-color: white;
+  }
 }
 
 p {
@@ -105,24 +105,23 @@ p {
   }
 }
 
-@media (min-width: 768px) {
-  ul.dropdown-menu, ul.dropdown-menu > li {
-    margin: 5px 0 5px 0;
-    background-color: $theme-secondary;
+ul.dropdown-menu, ul.dropdown-menu > li {
+  margin: 5px 0 5px 0;
+  background-color: $theme-secondary;
+  color: white;
+  > a {
+    font-family: 'Lato', 'Helvetica', 'Arial', 'sans-serif';
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 11px;
     color: white;
-    > a {
-      font-family: 'Lato', 'Helvetica', 'Arial', 'sans-serif';
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      font-size: 11px;
-      color: white;
-      &:focus, &:hover, &:focus:hover {
-        color: $theme-primary;
-        background-color: transparent;
-      }
+    &:focus, &:hover, &:focus:hover {
+      color: $theme-primary;
+      background-color: transparent;
     }
   }
 }
+
 
 .bg {
   position: absolute;
@@ -133,12 +132,18 @@ p {
   background: $theme-secondary;
 }
 
+.navbar-collapse {
+  border-top: none;
+}
+
 .navbar-collapse.in {
     overflow-y: visible; /* Bootstrap default is "auto" */
 }
 
-.navbar-collapse {
-  border-top: none;
+.nav-pills {
+  // border-bottom: 1px solid lighten($theme-primary, 25%);
+  border: 1px solid lighten($theme-primary, 25%);
+  border-radius: 3px;
 }
 
 .nav-secondary {
@@ -200,9 +205,7 @@ header {
   p {
     font-size: 14px;
   }
-  hr {
-    max-width: 40%;
-  }
+
   video {
     margin: 0;
     padding: 0;

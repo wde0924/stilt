@@ -5,7 +5,7 @@ title: STILT WBB Tutorial
 
 # WBB Carbon Dioxide
 
-Here, we'll simulate a day of carbon dioxide concentrations for the [UATAQ Lab](https://air.utah.edu), housed in the William Browning Building on the University of Utah campus. This tutorial assumes a base level of knowledge for [navigating UNIX based filesystems from the command line](https://www.digitalocean.com/community/tutorials/basic-linux-navigation-and-file-management), that you have read through [installing STILT]({{"/docs/install.html"|relative_url}}), and know where to find documentation for the different [model controls]({{"/docs/controls.html"|relative_url}}).
+Here, we'll simulate a day of carbon dioxide concentrations for the [UATAQ Lab](https://air.utah.edu), housed in the William Browning Building (WBB) on the University of Utah campus. This tutorial assumes a base level of knowledge for [navigating UNIX based filesystems from the command line](https://www.digitalocean.com/community/tutorials/basic-linux-navigation-and-file-management), that you have read through [installing STILT]({{"/docs/install.html"|relative_url}}), and know where to find documentation for the different [model controls]({{"/docs/controls.html"|relative_url}}).
 
 ### Dependencies
 
