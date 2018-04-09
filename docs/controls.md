@@ -98,6 +98,7 @@ Arg             | Description
 
 Arg             | Description
 ----------------|-------------------------------------------------------------------------
+`emisshrs` | duration of time to release particles over at the start of simulation, in hours; defaults to 0.01
 `iconvect` | flag for convection. If set to 1, then runs excessive convection as described in Gerbig et al., 2003. For specialized RAMS output, the particles will be vertically redistributed according to the output convective mass fluxes; defaults to 0
 `isot` | flag used to set the isotropic turbulence option; defaults to 0 to compute horizontal turbulence from wind field deformation. Setting to 1 results in the horizontal turbulence to be the same in both the u and v directions
 `khmax` | max age a particle is allowed to attain; defaults to 9999
