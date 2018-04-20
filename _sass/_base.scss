@@ -66,6 +66,7 @@ p {
   font-family: 'Catamaran', 'Helvetica', 'Arial', 'sans-serif';
   font-weight: 200;
   letter-spacing: 1px;
+
   .navbar-header {
     .navbar-brand {
       font-family: 'Catamaran', 'Helvetica', 'Arial', 'sans-serif';
@@ -87,6 +88,7 @@ p {
       }
     }
   }
+
   .nav {
     > li {
       > a {
@@ -110,18 +112,22 @@ p {
     .dropdown-menu {
       margin-top: 0;
       padding-top: 0;
-      text-align: right;
+      text-align: left;
+      @media (min-width: 768px) {
+        text-align: right;
+      }
+      a {
+        color: white !important;
+      }
     }
     .btn-outline {
       background: none;
       border-color: $theme-primary;
       color: $theme-primary;
+      margin: 0 15px;
       @media (min-width: 768px) {
-        margin-top: 7px;
+        margin: 7px 15px;
         padding: 7px 20px;
-      }
-      @media (max-width: 767px) {
-        max-width: 150px;
       }
     }
   }
@@ -427,6 +433,9 @@ img {
 
 .modal-inner {
   padding: 10px;
+  @media (min-width: 768px) {
+    padding: 30px;
+  }
 }
 
 .blocker {
