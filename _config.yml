@@ -13,4 +13,4 @@ social:
 # Build settings
 markdown: kramdown
 highlighter: rouge
-exclude: ["less","node_modules","Gruntfile.js","package.json","README.md"]
+exclude: ["README.md"]
