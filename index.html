@@ -9,12 +9,17 @@ title: "STILT Home"
 
 <body id="page-top">
   <style>
-    .navbar-default { background-color: transparent; }
-    .dropdown-menu,
-    .dropdown-menu li {
-      background-color: transparent !important;
-      border: none;
-      box-shadow: none;
+     /* { background-color: transparent; } */
+    @media (min-width: 768px) {
+      .navbar-default {
+        background-color: transparent;
+      }
+      .dropdown-menu,
+      .dropdown-menu li {
+        background-color: transparent !important;
+        border: none;
+        box-shadow: none;
+      }
     }
   </style>
 
@@ -33,6 +38,8 @@ title: "STILT Home"
                   <div class="col-xs-10 col-xs-offset-1">
                     <a href={{"/about.html"|relative_url}} class="btn btn-default btn-xl btn-block">What is STILT</a>
                   </div>
+                </div>
+                <div class="row">
                   <div class="col-xs-5 col-xs-offset-1">
                     <a href={{"/docs/"|relative_url}} class="btn btn-outline btn-xl btn-block">Install</a>
                   </div>
