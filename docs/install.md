@@ -32,25 +32,28 @@ Two options exist to initialize a new STILT project.
 
 This method uses R to initialize a new project. `stilt_init()` in the Utah Atmospheric Trace gas & Air Quality \(UATAQ\) R package, which includes tools for trace gas data manipulation and analysis, is a wrapper around several system commands that do much of the heavy lifting. The `uataq` R package is available on [Github](https://github.com/benfasoli/uataq/) and can be installed in R using `devtools`.
 
-```r
-if (!require('devtools')) install.packages('devtools')
-devtools::install_github('benfasoli/uataq')
-```
+<div class="terminal">
+  <div class="terminal-osx-button"></div>
+  <div class="terminal-osx-button"></div>
+  <div class="terminal-osx-button"></div>
+  <div class="terminal-lang">R</div>
+  <div class="terminal-command">
+    if (!require('devtools')) install.packages('devtools')
+  </div>
+  <div class="terminal-command">
+    devtools::install_github('benfasoli/uataq')
+  </div>
+</div>
 
-A new STILT project can then be initialized in plain R code with
-
-```r
-uataq::stilt_init('myproject')
-```
-
-> The STILT repository is 38 MB and contains source code for the model, website, and documentation.
+A STILT project is initialized in plain R code with
 
 <div class="terminal">
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
   <div class="terminal-osx-button"></div>
+  <div class="terminal-lang">R</div>
   <div class="terminal-command">
-    Rscript -e "uataq::stilt_init('myproject')"
+    uataq::stilt_init('myproject')
   </div>
   <div class="terminal-return">
     Cloning into 'stilt'...<br>
@@ -60,38 +63,45 @@ uataq::stilt_init('myproject')
     Receiving objects: 100% (1712/1712), 32.85 MiB | 8.57 MiB/s, done.<br>
     Resolving deltas: 100% (652/652), done.<br>
     Checking connectivity... done.<br>
-    gfortran  -fpic -g -O2 -fstack-protector --param=ssp-buffer-size=4  -c  permute.f90 -o permute.o<br>
-    gfortran -shared -L/usr/lib/R/lib -Wl,-Bsymbolic-functions -Wl,-z,relro -o permute.so permute.o -L/usr/lib/R/lib -lR<br>
-    gfortran -c -O2 -fconvert=big-endian -frecord-marker=4 -fbounds-check -ffree-form -I. funits.f<br>
-    ...    
+    <br>
+    STILT hymodelc installation options:<br>
+    1 - Compile hymodelc from source<br>
+    2 - hymodelc-centos-7.4<br>
+    3 - hymodelc-ubuntu-16.04<br>
+    4 - hymodelc-ubuntu-14.04<br>
+    5 - hymodelc-macos-10.13<br>
+    <br>
+    Install option (number from above):
   </div>
 </div>
 
-This function  
-1. clones the stilt Github repository into a local `stilt` directory which is then renamed `myproject`  
-2. builds the `permute.so` dynamic link library used to apply gaussian kernels for footprint output  
-3. compiles the hymodelc executable and moves to the `exe` directory  
-4. populates the project name and paths in `myproject/r/run_stilt.r`
+[Binaries are available](https://github.com/uataq/stilt/releases) for several systems or you can choose to compile the `hymodelc` binary from the source. Compiling from source code requires [user registration](https://mail.bgc-jena.mpg.de/mailman/listinfo/stilt_user) to receive login credentials to the SVN repository.
 
 > Since the name of the Github Repository is "stilt", a name other than "stilt" should be chosen for projects. Otherwise, conflicts will arise when attempting to clone the master repository for initializing future projects in the same parent directory.
 
 ### Manual
 
-While the R method is preferable since it streamlines the process of initializing new projects, the same can be accompolished manually. To reproduce the results above,
-
-Clone the repository and set the name of the project
+While the R method is preferable since it streamlines the process of initializing new projects, the same can be accomplished manually. To reproduce the results above,
 
 ```bash
+# Clone GitHub repo for R wrapper
 git clone https://github.com/benfasoli/stilt
+# Set the name of the project
 mv stilt myproject
+
+# Checkout merged_stilt_hysplit from SVN
+svn --username {USERNAME} checkout \
+    https://projects.bgc-jena.mpg.de/STILT/svn/trunk/merged_stilt_hysplit/ \
+    fortran/
+# Compile hymodelc using the provided makefile
+(cd fortran && make)
+# Move the hymodelc binary to exe/
+mv fortran/hymodelc exe/hymodelc
+# Ensure hymodelc is executable
+chmod +x exe/hymodelc
+
+# Compile permute DLL for footprint kernel aggregation
+R CMD SHLIB r/src/permute.f90
 ```
 
-Compile and move the hymodelc executable to the `exe` directory using the provided `setup` script \(or manually\)
-
-```bash
-cd myproject
-chmod +x setup
-./setup
-```
-
-Finally, edit settings in `r/run_stilt.r`, being sure to specify the project name  and the working directory.
+Finally, edit settings in `r/run_stilt.r`, being sure to specify the project name and the working directory.

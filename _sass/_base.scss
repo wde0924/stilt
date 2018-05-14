@@ -450,3 +450,23 @@ img {
   border-color: $theme-primary;
   box-shadow: 0 0 5px rgba($theme-primary, 0.4);
 }
+
+// Table settings
+table {
+  width: 100%;
+
+  tbody {
+    tr {
+      border: lighten($theme-secondary, 75) solid;
+      border-width: 1px 0 ;
+    }
+    tr:last-child {
+      border: none;
+    }
+  }
+
+  th:nth-child(1),
+  td:nth-child(1) {
+    width: 150px;
+  }
+}
