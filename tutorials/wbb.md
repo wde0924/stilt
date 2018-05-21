@@ -150,7 +150,7 @@ The minimum we need to simulate the carbon dioxide concentration at WBB is (1) m
 
 which contains
 
-1. `emissions.rds` - 0.002deg hourly emissions inventory
+1. `emissions.rds` - 0.002 deg hourly emissions inventory
 1. `met/` - meteorological data files
 1. `tutorial.r` - a simple script to combine footprints with the emissions inventory and plot a timeseries of the concentrations
 
