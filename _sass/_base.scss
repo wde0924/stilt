@@ -456,9 +456,11 @@ table {
   width: 100%;
 
   tbody {
+    // line-height: 3em;
     tr {
       border: lighten($theme-secondary, 75) solid;
-      border-width: 1px 0 ;
+      border-width: 1px 0;
+      padding-top: 100px;
     }
     tr:last-child {
       border: none;
