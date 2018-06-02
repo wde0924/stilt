@@ -1,1 +1,8 @@
 .DS_Store
+*.o
+*.so
+hymodelc
+out/*
+fortran/*
+_rslurm_stilt/*
+._*

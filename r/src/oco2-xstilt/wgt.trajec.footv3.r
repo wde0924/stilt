@@ -10,21 +10,22 @@
 # add "get.weight.func()" for obtaining interpolated weighting function
 # trajec with level column is not passed to weight.trajecfoot(), DW, 05/22/2017
 # version 3 for matching Ben's STILTv2, DW, 05/29/2018
+# use 'xhgt' instead of 'level', DW, 06/01/2018
 
-weight.trajecfootv3 <- function(output, oco2.info, ak.wgt = T, pw.wgt = T){
+wgt.trajec.footv3 <- function(output, oco2.info, ak.wgt = T, pwf.wgt = T){
 
   # read trajectory before weighting
-  trajdat <- output$particle  # now a data.frame
-  dpar <- (output$receptor)$dpar
+  trajdat <- output$particle        # now a data.frame
+  trajdat <- trajdat[order(abs(trajdat$time)), ]    # order by time
 
-	# HERE, ak.wgt and pw.wgt is passed on for weighting trajec
-	combine.prof <- get.weight.funcv3(output = output, oco2.info = oco2.info,
-		                                ak.wgt = ak.wgt, pw.wgt = pw.wgt)
+	# HERE, ak.wgt and pwf.wgt is passed on for weighting trajec
+	combine.prof <- get.wgt.funcv3(output = output, oco2.info = oco2.info,
+		                             ak.wgt = ak.wgt, pwf.wgt = pwf.wgt)
 
 	### STARTing weighting trajec based on profiles
-	if (ak.wgt == F & pw.wgt == F) {
+	if (ak.wgt == F & pwf.wgt == F) {
 
-		# if ak.wgt == F && pw.wgt == F, return trajec with original footprint,
+		# if ak.wgt == F && pwf.wgt == F, return trajec with original footprint,
 		# no longer need any following weighting...
 		# !!! but still need to return weighting functions and other info
 		cat("weight.trajecfootv3(): NO weighting turned on...\n")
@@ -35,11 +36,10 @@ weight.trajecfootv3 <- function(output, oco2.info, ak.wgt = T, pw.wgt = T){
 		#### --------- START WEIGHTING FOOTPRINT COLUMN FROM .RData FILE --------- #
 		# group particles, sort traj files by "indx", 05/22/2017
 		# add one more column for release level to which particles belong
-		level <- trajdat$indx %/% dpar
-		trajdat <- cbind(trajdat, level)
-		adj <- trajdat$indx %% dpar !=0
-		trajdat[adj, "level"] <- trajdat[adj, "level"] + 1
-		stilt.nlevel <- max(trajdat$level)
+    # since 'xhgt' has been stored using Ben's code, indicating initial release
+    # hgts, use 'xhgt' instead of 'level', DW, 06/01/2018
+    uni.xhgt <- unique(trajec$xhgt)
+    nlevel <- length(uni.xhgt)
 
 		# initialize weighted foot column with normal footprint
 		trajdat$newfoot <- NA
@@ -48,34 +48,32 @@ weight.trajecfootv3 <- function(output, oco2.info, ak.wgt = T, pw.wgt = T){
 		# along with number of STILT levels
 		stilt.prof <- combine.prof[combine.prof$stiltTF == TRUE, ]
 
-		# DW, 04/20/2017, add pw.wgt flag too
+		# DW, 04/20/2017, add pwf.wgt flag too
 		# only weight footprint in trajec if one of the two flags/or both are TRUE
-		if (ak.wgt == T & pw.wgt == T) {
+		if (ak.wgt == T & pwf.wgt == T) {
 		  cat("weight trajec by both AK & PW profiles...\n")
 			wgt.prof <- stilt.prof$ak.pw
-		}
-		if (ak.wgt == F & pw.wgt == T) {
+
+		} else if (ak.wgt == F & pwf.wgt == T) {
       cat("weight trajec only by PW profiles\n")
 			wgt.prof <- stilt.prof$pw
-		}
 
-		if (ak.wgt == T & pw.wgt == F) {
+		} else if (ak.wgt == T & pwf.wgt == F) {
 			cat("weight trajec only by AK profiles\n")
 			wgt.prof <- stilt.prof$ak.norm
 		}
 
 		# start weighting for unique release levels
-		for (l in 1:stilt.nlevel) {
-			level.indx <- which(trajdat$level == l)
+		for (h in 1:length(uni.xhgt)) {
+			hgt.indx <- which(trajdat$xhgt == uni.xhgt[h])
 
-      # need to multiple by number of levels, as trajecfoot() will calculate the
-      # spatial footprint based on average footprint in a column
-      # thus, resultant 'newfoot' should be similar to 'foot'
-			trajdat[level.indx, "newfoot"] <- trajdat[level.indx, "foot"] *
-                                        wgt.prof[l] * stilt.nlevel
-		} # end for l
+      # need to multiple by number of levels, as trajecfoot()/calc_footprint()
+      # calculates the spatial footprint based on average footprint in a column
+      # thus, resultant 'newfoot' should have similar order of mag as of 'foot'
+			trajdat$newfoot[hgt.indx] <- trajdat$foot[hgt.indx] * wgt.prof[h] * nlevel
+		} # end loop h
 
-	} # end if flag, ak.wgt & pw.wgt
+	} # end if all flags, ak.wgt & pwf.wgt
 
 	# for testing, store two sets of trajdat
 	# one weighting over AK.norm * PW, newfoot are much smaller than original foot

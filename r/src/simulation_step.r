@@ -8,10 +8,16 @@
 #'
 #' @export
 
+# modification for OCO-2/X-STILT, Dien Wu
+# adding input variables including 'oco2.path', 'ak.wgt', 'pwf.wgt'
+# extra functions including 'get.oco2.info()', 'get.ground.hgt()',
+#                           'get.wgt.funcv3()', 'wgt.trajec.footv3()'
+
 simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
-                            conage = 48, cpack = 1, delt = 0, dxf = 1, dyf = 1,
-                            dzf = 0.01, emisshrs = 0.01, frhmax = 3, frhs = 1,
-                            frme = 0.1, frmr = 0, frts = 0.1, frvs = 0.1, hnf_plume = T,
+                            ak.wgt = F, conage = 48, cpack = 1, delt = 0,
+                            dxf = 1, dyf = 1, dzf = 0.01, emisshrs = 0.01,
+                            frhmax = 3, frhs = 1, frme = 0.1, frmr = 0,
+                            frts = 0.1, frvs = 0.1, hnf_plume = T,
                             hscale = 10800, horcoruverr = NA, horcorzierr = NA,
                             ichem = 0, iconvect = 0, initd = 0, isot = 0,
                             kbls = 1, kblt = 1, kdef = 1, khmax = 9999,
@@ -22,8 +28,9 @@ simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
                             ncycl = 0, ndump = 0, ninit = 1, nturb = 0,
                             numpar = 200, outdt = 0, outfrac = 0.9,
                             output_wd = file.path(stilt_wd, 'out'), p10f = 1,
-                            projection = '+proj=longlat', qcycle = 0, r_run_time,
-                            r_lati, r_long, r_zagl, random = 1, run_trajec = T,
+                            projection = '+proj=longlat', pwf.wgt = F,
+                            qcycle = 0, r_run_time, r_lati, r_long, r_zagl,
+                            random = 1, run_trajec = T,
                             siguverr = NA, sigzierr = NA, smooth_factor = 1,
                             splitf = 1, time_integrate = F, timeout = 3600,
                             tkerd = 0.18, tkern = 0.18, tlfrac = 0.1,
@@ -41,14 +48,14 @@ simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
       r_long <- r_long[X]
       r_zagl <- r_zagl[X]
     }
-    
-    # Column trajectories use r_zagl passed as a list of values for lapply and 
+
+    # Column trajectories use r_zagl passed as a list of values for lapply and
     # parLapply but a vector in slurm_apply
     r_zagl <- unlist(r_zagl)
-    
+
     # Ensure dependencies are loaded for current node/process
     source(file.path(stilt_wd, 'r/dependencies.r'), local = T)
-    
+
     if (is.null(varsiwant)) {
       varsiwant <- c('time', 'indx', 'long', 'lati', 'zagl', 'sigw', 'tlgr',
                      'zsfc', 'icdx', 'temp', 'samt', 'foot', 'shtf', 'tcld',
@@ -57,30 +64,63 @@ simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
     } else if (any(grepl('/', varsiwant))) {
       varsiwant <- unlist(strsplit(varsiwant, '/', fixed = T))
     }
-    
+
     # Creates subdirectories in out for each model run time. Each of these
     # subdirectories is populated with symbolic links to the shared datasets
     # below and a run-specific SETUP.CFG and CONTROL
-    rundir_format <- paste0('%Y%m%d%H_', r_long, '_', r_lati, '_', 
+    rundir_format <- paste0('%Y%m%d%H_', r_long, '_', r_lati, '_',
                             ifelse(length(r_zagl) > 1, 'X', r_zagl))
     rundir  <- file.path(output_wd, 'by-id',
                          strftime(r_run_time, rundir_format, 'UTC'))
     uataq::br()
     message(paste('Running simulation ID:  ', basename(rundir)))
-    
+
     # Calculate particle trajectories ------------------------------------------
     # run_trajec determines whether to try using existing trajectory files or to
     # recycle existing files
     output <- list()
     output$file <- file.path(rundir, paste0(basename(rundir), '_traj.rds'))
-    
+
     if (run_trajec) {
       # Ensure necessary files and directory structure are established in the
       # current rundir
       dir.create(rundir)
       link_files <- dir(file.path(stilt_wd, 'exe'))
       file.symlink(file.path(stilt_wd, 'exe', link_files), rundir)
-      
+
+      # Execute particle trajectory simulation, and read results into data frame
+      output$receptor <- list(run_time = r_run_time,
+                              lati = r_lati,
+                              long = r_long,
+                              zagl = r_zagl)
+
+      ## modifications for OCO-2/X-STILT ------ Dien Wu, 05/29/2018
+      # need modeled ground height to interpolate pres-hgt relation for
+      # interpolating satellite wighting profiles to model levels
+
+      if (length(r_zagl) > 1) {
+        cat('Column simulations...\n')
+
+        # store trajec from 5mAGL in the same copy dir 'rundir'
+        # only release one particle, but turn on turbulance 'nturb'
+        # get.ground.height() will call calc_trajectory() to estimate ground
+        # height in m, u-, v- and w- directional instantaneous wind at receptor
+        recp.var <- get.ground.hgt(varsiwant, conage, cpack, dxf, dyf, dzf,
+                                   emisshrs, frhmax, frhs, frme, frmr, frts,
+                                   frvs, hscale, ichem, iconvect, initd, isot,
+                                   ivmax, kbls, kblt, kdef, khmax, kmix0, kmixd,
+                                   kmsl, kpuff, krnd, kspl, kzmix, maxdim,
+                                   maxpar, met_file_format, met_loc, mgmin,
+                                   ncycl, ndump, ninit, n_hours, outdt, outfrac,
+                                   p10f, qcycle, random, splitf, tkerd, tkern,
+                                   rm_dat, receptor = output$receptor, rundir,
+                                   timeout, tlfrac, tratio, tvmix, veght,
+                                   vscale, w_option, zicontroltf, z_top)
+
+        # paste interpolated info to output$receptor
+        output$receptor <- c(output$receptor, recp.var)
+      }
+
       # Find necessary met files
       met_files <- find_met_files(r_run_time, met_file_format, n_hours, met_loc)
       if (length(met_files) < n_met_min) {
@@ -90,12 +130,7 @@ simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
             file = file.path(rundir, 'ERROR'))
         return()
       }
-      
-      # Execute particle trajectory simulation, and read results into data frame
-      output$receptor <- list(run_time = r_run_time,
-                              lati = r_lati,
-                              long = r_long,
-                              zagl = r_zagl)
+
       particle <- calc_trajectory(varsiwant, conage, cpack, delt, dxf, dyf, dzf,
                                   emisshrs, frhmax, frhs, frme, frmr, frts, frvs,
                                   hscale, ichem, iconvect, initd, isot, ivmax,
@@ -107,11 +142,11 @@ simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
                                   timeout, tlfrac, tratio, tvmix, veght, vscale,
                                   0, w_option, zicontroltf, z_top, rundir)
       if (is.null(particle)) return()
-      
+
       # Bundle trajectory configuration metadata with trajectory informtation
       output$particle <- particle
       output$params <- read_config(file = file.path(rundir, 'CONC.CFG'))
-      
+
       # Optionally execute second trajectory simulations to quantify transport
       # error using parameterized correlation length and time scales
       xyerr <- write_winderr(siguverr, tluverr, zcoruverr, horcoruverr,
@@ -143,14 +178,14 @@ simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
                                              tlzierr = tlzierr,
                                              horcorzierr = horcorzierr)
       }
-      
+
       # Save output object to compressed rds file and symlink to out/particles
       # directory for convenience
       saveRDS(output, output$file)
       file.symlink(output$file, file.path(output_wd, 'particles',
                                           basename(output$file))) %>%
         invisible()
-      
+
     } else {
       # If user opted to recycle existing trajectory files, read in the recycled
       # file to a data_frame with an adjusted timestamp and index for the
@@ -162,13 +197,36 @@ simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
       }
       particle <- readRDS(output$file)$particle
     }
-    
+
+    ## modifications for OCO-2/X-STILT ------ Dien Wu, 06/01/2018
+    # Weight footprint --------------------------------------------------------
+    # + weight trajec-level footprint, call X-STILT subroutines
+    if (length(r_zagl) > 1) {
+
+      # get OCO-2 profile first according to lat.lon of receptor, return a list
+      oco2.info <- get.oco2.info(oco2.path, receptor = output$receptor)
+      if (is.null(oco2.info)) {
+        warning('NO OCO-2 info found for a given receptor lat/lon'); return()
+      }
+
+      # call weight.trajecfootv3() to start weighting trajec-level footprint,
+      # before calculating 2D footprint; ak.wgt and pwf.wgt as weighting flags
+      wgt.output <- wgt.trajec.footv3(output = output, oco2.info = oco2.info,
+                                      ak.wgt = ak.wgt, pwf.wgt = pwf.wgt)
+
+      ## returns the ak pw profiles at for all levels & the weighted footprint
+      combine.prof <- wgt.output$wgt.prof	 # all vertical profs, ak, pw, apriori
+
+      # overwrite 'particle' with weighted traj
+      particle <- wgt.output$particle
+    }  # end if length(r_zagl) > 1
+
     # Calculate near-field dilution height based on gaussian plume width
     # approximation and recalculate footprint sensitivity for cases when the
     # plume height is less than the PBL height scaled by veght
     if (hnf_plume)
       particle <- calc_plume_dilution(particle, numpar, r_zagl, veght)
-    
+
     # Produce footprint --------------------------------------------------------
     # Aggregate the particle trajectory into surface influence footprints. This
     # outputs a .rds file, which can be read with readRDS() containing the
