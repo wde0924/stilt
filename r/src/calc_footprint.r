@@ -35,22 +35,25 @@
 #' @import dplyr, proj4, raster, uataq
 #' @export
 
+if(F){
+  p = particle; output = foot_file
+}
 calc_footprint <- function(p, output = NULL, r_run_time,
                            projection = '+proj=longlat',
                            smooth_factor = 1, time_integrate = F,
                            xmn, xmx, xres, ymn, ymx, yres = xres) {
-  
+
   require(dplyr)
   require(raster)
   require(uataq)
-  
+
   np <- max(p$indx, na.rm = T)
-  
+
   # Interpolate particle locations during initial time steps
   times <- c(seq(0, -10, by = -0.1),
              seq(-10.2, -20, by = -0.2),
              seq(-20.5, -100, by = -0.5))
-  
+
   i <- p %>%
     dplyr::select(indx, time, long, lati, foot) %>%
     full_join(expand.grid(time = times,
@@ -63,7 +66,7 @@ calc_footprint <- function(p, output = NULL, r_run_time,
     ungroup() %>%
     na.omit() %>%
     mutate(time = round(time, 1))
-  
+
   # Scale interpolated values to retain total field
   mi <- i$time >= -10
   mp <- p$time >= -10
@@ -74,7 +77,7 @@ calc_footprint <- function(p, output = NULL, r_run_time,
   mi <- i$time < -20 & i$time >= -100
   mp <- p$time < -20 & p$time >= -100
   i$foot[mi] <- i$foot[mi] / (sum(i$foot[mi], na.rm = T) / sum(p$foot[mp], na.rm = T))
-  
+
   # Translate x, y coordinates into desired map projection
   is_longlat <- grepl('+proj=longlat', projection, fixed = T)
   if (!is_longlat) {
@@ -86,23 +89,23 @@ calc_footprint <- function(p, output = NULL, r_run_time,
     ymn <- min(grid_lims$y)
     ymx <- max(grid_lims$y)
   }
-  
+
   # Set footprint grid
   glong <- head(seq(xmn, xmx, by = xres), -1)
   glati <- head(seq(ymn, ymx, by = yres), -1)
-  
+
   # Gaussian kernel bandwidth scaling
   kernel <- i %>%
     group_by(time) %>%
-    summarize(varsum = var(long, na.rm = T) + var(lati, na.rm = T),
+    dplyr::summarize(varsum = var(long, na.rm = T) + var(lati, na.rm = T),
               lati = mean(lati, na.rm = T)) %>%
     na.omit()
   di <- kernel$varsum^(1/4)
   ti <- abs(kernel$time/1440)^(1/2)
   grid_conv <- ifelse(is_longlat, cos(kernel$lati * pi/180), 1)
   w <- smooth_factor * 0.06 * di * ti / grid_conv
-  
-  
+
+
   # Gaussian kernel weighting calculation
   make_gauss_kernel <- function (rs, sigma, projection) {
     # Modified from raster:::.Gauss.weight()
@@ -122,7 +125,7 @@ calc_footprint <- function(p, output = NULL, r_run_time,
     w[is.na(w)] <- 1
     w
   }
-  
+
   # Determine maximum kernel size
   xyres <- c(xres, yres)
   max_k <- make_gauss_kernel(xyres, max(w), projection)
@@ -130,10 +133,10 @@ calc_footprint <- function(p, output = NULL, r_run_time,
   xbufh <- (xbuf - 1) / 2
   ybuf <- nrow(max_k)
   ybufh <- (ybuf - 1) / 2
-  
+
   max_glong <- seq(xmn - (xbuf*xres), xmx + ((xbuf - 1)*xres), by = xres)
   max_glati <- seq(ymn - (ybuf*yres), ymx + ((ybuf - 1)*yres), by = yres)
-  
+
   # Remove zero influence particles and positions outside of domain
   xyzt <- i %>%
     filter(foot > 0, long >= (xmn - xbufh*xres), long < (xmx + xbufh*xres),
@@ -142,7 +145,7 @@ calc_footprint <- function(p, output = NULL, r_run_time,
   mask <- is.element(kernel$time, xyzt$time)
   kernel <- kernel[mask, ]
   w <- w[mask]
-  
+
   # Pre grid particle locations
   xyzt <- xyzt %>%
     transmute(loi = as.integer(findInterval(long, max_glong)),
@@ -150,58 +153,59 @@ calc_footprint <- function(p, output = NULL, r_run_time,
               foot = foot,
               time = time) %>%
     group_by(loi, lai, time) %>%
-    summarize(foot = sum(foot, na.rm = T)) %>%
+    dplyr::summarize(foot = sum(foot, na.rm = T)) %>%
     ungroup()
-  
+
   # Dimensions in accordance with CF convention (x, y, t)
   nx <- length(max_glati)
   ny <- length(max_glong)
   grd <- matrix(0, nrow = ny, ncol = nx)
-  
+
   # Split particle data by footprint layer
   xyzt$layer <- if (time_integrate) 0 else floor(xyzt$time / 60)
   layers <- sort(unique(xyzt$layer))
   nlayers <- length(layers)
-  
+
   # Preallocate footprint output array
   foot <- array(grd, dim = c(dim(grd), nlayers))
   for (i in 1:nlayers) {
     xyzt_layer <- filter(xyzt, layer == layers[i])
-    
+
     times <- unique(xyzt_layer$time)
     for (j in 1:length(times)) {
       xyzt_step <- filter(xyzt_layer, time == times[j])
-      
+
       # Proceed to next timestep without 2 particles to calculate kernel
       if (nrow(xyzt_step) < 2) next
-      
+
       # Create dispersion kernel based on kernel bandwidth w
       k <- make_gauss_kernel(xyres, w[kernel$time == times[j]], projection)
-      
+
       # Array dimensions
       len <- nrow(xyzt_step)
       nkx <- ncol(k)
       nky <- nrow(k)
-      
+
       # Call permute fortran subroutine to build and aggregate kernels
-      out <- .Fortran('permute', ans = grd, nax = nx, nay = ny, k = k, 
-                      nkx = nkx, nky = nky, len = len, lai = xyzt_step$lai, 
+      out <- .Fortran('permute', ans = grd, nax = nx, nay = ny, k = k,
+                      nkx = nkx, nky = nky, len = len, lai = xyzt_step$lai,
                       loi = xyzt_step$loi, foot = xyzt_step$foot)
       foot[ , , i] <- foot[ , , i] + out$ans
     }
   }
-  
+
   # Remove spatial buffer around domain used in kernel aggregation
   size <- dim(foot)
   foot <- foot[(xbuf+1):(size[1]-xbuf), (ybuf+1):(size[2]-ybuf), ] / np
-  
+
   # Determine timestamp to use in output files
+  # change 'r_run_time's format as POSIXct, in case it's not when inputting, DW
   if (time_integrate) {
-    time_out <- as.numeric(r_run_time) 
+    time_out <- as.numeric(as.POSIXct(r_run_time, tz = "UTC"))
   } else {
-    time_out <- as.numeric(r_run_time + layers * 3600)
+    time_out <- as.numeric(as.POSIXct(r_run_time, tz = "UTC")) + layers * 3600
   }
-  
+
   # Set footprint metadata and write to file
   write_footprint(foot, output = output, glong = glong, glati = glati,
                   projection = projection, xres = xres, yres = yres,
