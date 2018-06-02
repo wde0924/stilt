@@ -4,13 +4,13 @@
 # clear up, 04/30/2017, DW
 
 # read variables from output of "create_namelist_trajec.r"
-recp.to.namelist <- function(namelist, plotTF){
+recp.to.namelist <- function(namelist, recp.num = NULL, plotTF){
 
   # ------------------- Step 1. READ IN OCO-2 LITE FILES --------------------- #
   YYYYMMDD <- substr(namelist$timestr, 1, 8)
   YYMMDD   <- substr(namelist$timestr, 3, 8)
   oco2.file  <- list.files(pattern = YYMMDD, path = namelist$oco2.path)
-  oco2.dat   <- nc_open(file.path(oco2.path, oco2.file))
+  oco2.dat   <- nc_open(file.path(namelist$oco2.path, oco2.file))
 
   # grabbing OCO-2 levels, lat, lon
   # level 1 to 20, for space-to-surface, level 20 is the bottom level
@@ -174,6 +174,10 @@ recp.to.namelist <- function(namelist, plotTF){
   # that are used for each simulation and match Ben's code
   recp.info <- data.frame(run_time = run_times_utc, lati = recp.lat,
                           long = recp.lon, stringsAsFactors = F)
+
+  # subset receptor data frame, if needed
+  if (!is.null(recp.num))recp.info <- recp.info[1:recp.num, ]
+
   recp.info$zagl <- namelist$agl
   namelist$recp.info <- recp.info
 

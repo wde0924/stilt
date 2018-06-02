@@ -70,18 +70,15 @@ get.oco2.info <- function(oco2.path, receptor, diff.td = 1E-4){
 
     # satellite footprint, 1-8
     footprint <- ncvar_get(oco2.dat, "Sounding/footprint")[loc.index]
-    t_700 <- ncvar_get(oco2.dat, "Retrieval/T700")[loc.index] # temp at 700mb
-    psfc  < -ncvar_get(oco2.dat, "Retrieval/psurf")[loc.index] # sfc pressure
+    psfc  <- ncvar_get(oco2.dat, "Retrieval/psurf")[loc.index] # sfc pressure
 
     # check whether is missing data
+    ap[ap == -999999] <- NA
     pwf [pwf == -999999]  <- NA
     xco2[xco2 == -999999] <- NA
     pres[pres == -999999] <- NA
     psfc[psfc == -999999] <- NA
-    t_700[t_700 == -999999] <- NA
     grdhgt[grdhgt == -999999] <- NA
-
-    ap[ap == -999999] <- NA
     ak.norm[ak.norm == -999999] <- NA
     footprint[footprint == -999999] <- NA
     xco2.uncert[xco2.uncert == -999999] <- NA
@@ -96,7 +93,7 @@ get.oco2.info <- function(oco2.path, receptor, diff.td = 1E-4){
     all.info <- list(oco2.id = find.id, oco2.lat = find.lat,
                      oco2.lon = find.lon, ak.norm = ak.norm, pwf = pwf,
                      pres = pres, ap = ap, oco2.grdhgt = grdhgt,
-                     oco2.t700 = t_700, oco2.psfc = psfc, oco2.foot = footprint,
+                     oco2.psfc = psfc, oco2.foot = footprint,
                      oco2.xco2 = xco2, oco2.xco2.uncert = xco2.uncert)
 
     all.info      # return both profiles and other retrivals

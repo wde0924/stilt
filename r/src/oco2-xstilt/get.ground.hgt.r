@@ -24,6 +24,7 @@ get.ground.hgt <- function(varsiwant, conage, cpack, dxf, dyf, dzf, emisshrs,
   output  <- list()
 
   ### Do not change following input variables for this simulation!!
+  # only release one particle, but turn on turbulance 'nturb'
   delt    <- 1
   nturb   <- T
   numpar  <- 1

@@ -38,7 +38,7 @@ wgt.trajec.footv3 <- function(output, oco2.info, ak.wgt = T, pwf.wgt = T){
 		# add one more column for release level to which particles belong
     # since 'xhgt' has been stored using Ben's code, indicating initial release
     # hgts, use 'xhgt' instead of 'level', DW, 06/01/2018
-    uni.xhgt <- unique(trajec$xhgt)
+    uni.xhgt <- unique(trajdat$xhgt)
     nlevel <- length(uni.xhgt)
 
 		# initialize weighted foot column with normal footprint
