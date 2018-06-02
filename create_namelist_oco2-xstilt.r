@@ -49,7 +49,7 @@ track.timestr <- paste0(track.timestr, oco2.hr)
 columnTF  <- T    # whether a column receptor or fixed receptor
 forwardTF <- F    # forward or backward traj, if forward, release from a box
 windowTF  <- F    # whether to release particles every ?? minutes,'dhr' in hours
-overwrite <- T	  # T:rerun hymodelc, even if particle location object found
+overwrite <- F	  # T:rerun hymodelc, even if particle location object found
                   # F:re-use previously calculated particle location object
 delt      <- 2    # fixed timestep [min]; set = 0 for dynamic timestep
 nhrs      <- -24  # number of hours backward (-) or forward (+)
@@ -173,17 +173,6 @@ recp.indx <- c(seq(lat.lon[3], peak.lat[1], bw.bg),
                seq(peak.lat[1], peak.lat[2], bw.peak),
                seq(peak.lat[1], lat.lon[4], bw.bg))
 
-## instead of using allocate.receptors(), use Ben's algorithm
-# Parallel simulation settings
-n_cores <- 12
-n_nodes <- 6
-slurm   <- n_nodes > 1
-slurm_options <- list(
-  time      = '48:00:00',
-  account   = 'lin-kp',
-  partition = 'lin-kp'
-)
-
 #------------------------------ STEP 6 --------------------------------------- #
 #### Footprint grid settings
 ## whether weighted footprint by AK and PW
@@ -215,16 +204,15 @@ namelist <- list(agl = agl, ak.wgt = ak.wgt, delt = delt, dpar = dpar,
                  hnf_plume = hnf_plume, homedir = homedir,
                  horcoruverr = horcoruverr, horcorzierr = horcorzierr,
                  lat.lon = lat.lon, met.format = met.format, met.num = met.num,
-                 met.path = met.path, nhrs = nhrs, n_cores = n_cores,
-                 n_nodes = n_nodes, npar = npar, nummodel = nummodel,
+                 met.path = met.path, nhrs = nhrs, npar = npar,
                  oco2.path = oco2.path, oco2.ver = oco2.ver,
                  overwrite = overwrite, projection = projection,
                  pwf.wgt = pwf.wgt, recp.indx = recp.indx, siguverr = siguverr,
-                 sigzierr = sigzierr,site = site, slurm = slurm,
-                 slurm_options = slurm_options, smooth_factor = smooth_factor,
-                 timestr = track.timestr, time_integrate = time_integrate,
-                 TLuverr = TLuverr, TLzierr = TLzierr, windowTF = windowTF,
-                 workdir = workdir, zcoruverr = zcoruverr)
+                 sigzierr = sigzierr, site = site,
+                 smooth_factor = smooth_factor, timestr = track.timestr,
+                 time_integrate = time_integrate, TLuverr = TLuverr,
+                 TLzierr = TLzierr, windowTF = windowTF, workdir = workdir,
+                 zcoruverr = zcoruverr)
 
 #------------------------------ STEP 7 --------------------------------------- #
 ## call get.more.namelist() to get more info about receptors
@@ -233,12 +221,25 @@ namelist <- list(agl = agl, ak.wgt = ak.wgt, delt = delt, dpar = dpar,
 # plotTF for whether plotting OCO-2 observed data
 if (forwardTF == F) {
 
-  namelist <- recp.to.namelist(namelist = namelist, plotTF = F)
+  # whether to run just few receptors when debugging, num of receptors
+  recp.num <- NULL
+
+  # use Ben's algorithm for parallel simulation settings
+  n_nodes <- 6
+  n_cores <- 12
+  slurm <- n_nodes > 1
+  namelist$slurm_options <- list(time = '48:00:00',
+                                 account = 'lin-kp', partition = 'lin-kp')
+  namelist <- c(namelist, n_cores = n_cores, n_nodes = n_nodes, slurm = slurm)
+
+  # select satellite soundings--
+  namelist <- recp.to.namelist(namelist, recp.num, plotTF = F)
+
   cat('Done with creating namelist...\n')
   run.stilt.mod(namelist)  # call run_stilt_mod()
 }
 
-# if for forward time runs and determining backgorund XCO2
+## if for forward time runs and determining backgorund XCO2
 # plotTF for whether plotting urban plume & obs XCO2 if calling forward function
 # !!! if forward, release particles from a box around the city center
 if (forwardTF == T) {

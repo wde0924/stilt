@@ -12,9 +12,13 @@
 # adding input variables including 'oco2.path', 'ak.wgt', 'pwf.wgt'
 # extra functions including 'get.oco2.info()', 'get.ground.hgt()',
 #                           'get.wgt.funcv3()', 'wgt.trajec.footv3()'
-
+# for debug --
+if(F){
+  X = 1; r_run_time = receptors$run_time; r_lati = receptors$lati
+  r_long = receptors$long; r_zagl = receptors$zagl
+}
 simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
-                            ak.wgt = F, conage = 48, cpack = 1, delt = 0,
+                            ak.wgt = NULL, conage = 48, cpack = 1, delt = 0,
                             dxf = 1, dyf = 1, dzf = 0.01, emisshrs = 0.01,
                             frhmax = 3, frhs = 1, frme = 0.1, frmr = 0,
                             frts = 0.1, frvs = 0.1, hnf_plume = T,
@@ -26,9 +30,10 @@ simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
                             maxpar = 10000, met_file_format, met_loc,
                             mgmin = 2000, n_hours = -24, n_met_min = 1,
                             ncycl = 0, ndump = 0, ninit = 1, nturb = 0,
-                            numpar = 200, outdt = 0, outfrac = 0.9,
+                            numpar = 200, oco2.path = NULL, oco2.ver = NULL,
+                            outdt = 0, outfrac = 0.9,
                             output_wd = file.path(stilt_wd, 'out'), p10f = 1,
-                            projection = '+proj=longlat', pwf.wgt = F,
+                            projection = '+proj=longlat', pwf.wgt = NULL,
                             qcycle = 0, r_run_time, r_lati, r_long, r_zagl,
                             random = 1, run_trajec = T,
                             siguverr = NA, sigzierr = NA, smooth_factor = 1,
@@ -94,17 +99,18 @@ simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
                               long = r_long,
                               zagl = r_zagl)
 
-      ## modifications for OCO-2/X-STILT ------ Dien Wu, 05/29/2018
-      # need modeled ground height to interpolate pres-hgt relation for
-      # interpolating satellite wighting profiles to model levels
+      ## ---------------- modifications for OCO-2/X-STILT ------------------ ##
+      # need modeled ground height to interpolate pres-hgt relation to
+      # interpolate satellite weighting profiles from OCO-2 20 levels to model
+      # levels, added by Dien Wu, 05/26/2018
 
       if (length(r_zagl) > 1) {
-        cat('Column simulations...\n')
+        cat('Column simulations, estimating modeled ground heights ...\n')
 
-        # store trajec from 5mAGL in the same copy dir 'rundir'
-        # only release one particle, but turn on turbulance 'nturb'
-        # get.ground.height() will call calc_trajectory() to estimate ground
-        # height in m, u-, v- and w- directional instantaneous wind at receptor
+        # store trajec from 5mAGL in the same copy dir 'rundir' by calling
+        # get.ground.height() that calls calc_trajectory() to estimate ground
+        # height [m] along w. u-, v- and w- component instantaneous wind
+        # given receptor lat/lon/time/agl=5 (near ground)
         recp.var <- get.ground.hgt(varsiwant, conage, cpack, dxf, dyf, dzf,
                                    emisshrs, frhmax, frhs, frme, frmr, frts,
                                    frvs, hscale, ichem, iconvect, initd, isot,
@@ -119,7 +125,9 @@ simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
 
         # paste interpolated info to output$receptor
         output$receptor <- c(output$receptor, recp.var)
-      }
+      }  # end if length(r_zagl) > 1
+      ## ------------ END modifications for OCO-2/X-STILT ------------------ ##
+
 
       # Find necessary met files
       met_files <- find_met_files(r_run_time, met_file_format, n_hours, met_loc)
@@ -195,16 +203,20 @@ simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
                 '\n    skipping this timestep and trying the next...')
         return()
       }
-      particle <- readRDS(output$file)$particle
+
+      # also need output to get xhgt info, DW, 06/01/2018
+      output <- readRDS(output$file)
+      particle <- output$particle
     }
 
-    ## modifications for OCO-2/X-STILT ------ Dien Wu, 06/01/2018
-    # Weight footprint --------------------------------------------------------
-    # + weight trajec-level footprint, call X-STILT subroutines
-    if (length(r_zagl) > 1) {
+    ## ---------------- modifications for OCO-2/X-STILT -------------------- ##
+    # Weight footprint: call wgt.trajec.footv3() to weight trajec-level
+    # footprint, added by Dien Wu, 06/01/2018
 
+    if (length(r_zagl) > 1) {
       # get OCO-2 profile first according to lat.lon of receptor, return a list
       oco2.info <- get.oco2.info(oco2.path, receptor = output$receptor)
+
       if (is.null(oco2.info)) {
         warning('NO OCO-2 info found for a given receptor lat/lon'); return()
       }
@@ -217,9 +229,11 @@ simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
       ## returns the ak pw profiles at for all levels & the weighted footprint
       combine.prof <- wgt.output$wgt.prof	 # all vertical profs, ak, pw, apriori
 
-      # overwrite 'particle' with weighted traj
+      # overwrite 'particle' with weighted trajec
       particle <- wgt.output$particle
     }  # end if length(r_zagl) > 1
+    ## ------------ END modifications for OCO-2/X-STILT -------------------- ##
+
 
     # Calculate near-field dilution height based on gaussian plume width
     # approximation and recalculate footprint sensitivity for cases when the
@@ -238,6 +252,7 @@ simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
                            time_integrate = time_integrate,
                            xmn = xmn, xmx = xmx, xres = xres,
                            ymn = ymn, ymx = ymx, yres = yres)
+
     if (is.null(foot)) {
       warning('No non-zero footprint values found within the footprint domain.')
       cat('No non-zero footprint values found within the footprint domain.\n',
