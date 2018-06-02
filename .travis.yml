@@ -5,8 +5,9 @@ warnings_are_errors: true
 sudo: required
 
 branches:
-  except:
-    gh-pages
+  only:
+    - master
+    - oco2-xstilt
 
 cache:
   directories:
