@@ -9,30 +9,25 @@ run.stilt.mod <- function(namelist){
 
   # User inputs ----------------------------------------------------------------
   stilt_wd <- namelist$workdir
-  output_wd <- file.path(stilt_wd, 'out')
+  output_wd <- namelist$output_wd
   lib.loc <- .libPaths()[1]
-
-  # modification if length(agl) > 1, DW, 05/24/2018
-  # Initialize several variables for regular fixed run
-  ak.wgt <- NULL; pwf.wgt <- NULL; oco2.path <- NULL; oco2.ver <- NULL
-
   receptors <- namelist$recp.info
-  if (length(receptors$zagl) > 1) {  # if release trajec from a column
-    ak.wgt    <- namelist$ak.wgt  # whether weighted foot by averaging kernel
-    pwf.wgt   <- namelist$pwf.wgt  # whether weighted foot by pres weighting
-    oco2.path <- namelist$oco2.path
-    oco2.ver  <- namelist$oco2.ver
-  }  # end if
+
+  # modification for OCO-2 column simulations, DW, 05/24/2018
+  # if NA, meaning no weighting nor OCO2 files for regular simualtions
+  ak.wgt    <- namelist$ak.wgt     # whether weighted foot by averaging kernel
+  pwf.wgt   <- namelist$pwf.wgt    # whether weighted foot by pres weighting
+  oco2.path <- namelist$oco2.path
 
   # Model control
-  run_trajec <- namelist$overwrite
-  n_hours    <- namelist$nhrs
-  numpar     <- namelist$npar
   rm_dat     <- T
   timeout    <- 3600
+  run_trajec <- namelist$run_trajec
+  run_foot   <- namelist$run_foot
+  n_hours    <- namelist$nhrs
+  numpar     <- namelist$numpar
   varsiwant  <- namelist$varstrajec
-
-  if(length(varsiwant) == 0) {
+  if (length(varsiwant) == 0) {
     varsiwant  <- c('time', 'indx', 'long', 'lati', 'zagl', 'sigw', 'tlgr',
                     'zsfc', 'icdx', 'temp', 'samt', 'foot', 'shtf', 'tcld',
                     'dmas', 'dens', 'rhfr', 'sphu', 'solw', 'lcld', 'zloc',
@@ -124,10 +119,13 @@ run.stilt.mod <- function(namelist){
   message('Number of receptors: ', nrow(receptors))
   message('Number of parallel threads: ', n_nodes * n_cores)
 
-  grd <- array(dim = c((xmx - xmn) / xres, (ymx - ymn) / yres, abs(n_hours) * 60))
-  ram <- format(object.size(grd) * 2.0, units = 'MB', standard = 'SI')
-  message('Estimated footprint grid RAM allocation: ', ram)
-  gc()
+  if (run_foot) {
+    grd <- array(dim = c((xmx - xmn) / xres, (ymx - ymn) / yres,
+                         abs(n_hours) * 60))
+    ram <- format(object.size(grd) * 2.0, units = 'MB', standard = 'SI')
+    message('Estimated footprint grid RAM allocation: ', ram)
+    gc()
+  }
 
   # Source dependencies --------------------------------------------------------
   setwd(stilt_wd)
@@ -140,7 +138,7 @@ run.stilt.mod <- function(namelist){
   # Outputs are organized in three formats. by-id contains simulation files by
   # unique simulation identifier. particles and footprints contain symbolic
   # links to the particle trajectory and footprint files in by-id
-  system('rm -r out/footprints', ignore.stderr = T)
+  #system('rm -r out/footprints', ignore.stderr = T)
   if (run_trajec) {
     system('rm -r out/by-id', ignore.stderr = T)
     system('rm -r out/particles', ignore.stderr = T)
@@ -172,7 +170,7 @@ run.stilt.mod <- function(namelist){
   if (!is.null(varsiwant[1]))
     varsiwant <- paste(varsiwant, collapse = '/')
 
-  # add variables for OCO-2/XSTILT, 'ak.wgt', 'pwf.wgt', 'oco2.path', 'oco2.ver'
+  # add variables for OCO-2/XSTILT, 'ak.wgt', 'pwf.wgt', 'oco2.path', 'run_foot'
   output <- stilt_apply(X = 1:nrow(receptors), FUN = simulation_step,
                         slurm = slurm, slurm_options = slurm_options,
                         n_cores = n_cores, n_nodes = n_nodes, rm_dat = rm_dat,
@@ -190,21 +188,21 @@ run.stilt.mod <- function(namelist){
                         met_loc = met_loc, mgmin = mgmin, n_hours = n_hours,
                         n_met_min = n_met_min, ncycl = ncycl, ndump = ndump,
                         ninit = ninit, nturb = nturb, numpar = numpar,
-                        oco2.path = oco2.path, oco2.ver = oco2.ver,
-                        outdt = outdt, outfrac = outfrac, output_wd = output_wd,
-                        p10f = p10f, projection = projection, pwf.wgt = pwf.wgt,
+                        oco2.path = oco2.path, outdt = outdt, outfrac = outfrac,
+                        output_wd = output_wd, p10f = p10f,
+                        projection = projection, pwf.wgt = pwf.wgt,
                         qcycle = qcycle, r_run_time = receptors$run_time,
                         r_lati = receptors$lati, r_long = receptors$long,
                         r_zagl = receptors$zagl, random = random,
-                        run_trajec = run_trajec, siguverr = siguverr,
-                        sigzierr = sigzierr, smooth_factor = smooth_factor,
-                        splitf = splitf, stilt_wd = stilt_wd,
-                        time_integrate = time_integrate, timeout = timeout,
-                        tkerd = tkerd, tkern = tkern, tlfrac = tlfrac,
-                        tluverr = tluverr, tlzierr = tlzierr, tratio = tratio,
-                        tvmix = tvmix, varsiwant = varsiwant, veght = veght,
-                        vscale = vscale, w_option = w_option, xmn = xmn,
-                        xmx = xmx, xres = xres, ymn = ymn, ymx = ymx,
+                        run_foot = run_foot, run_trajec = run_trajec,
+                        siguverr = siguverr, sigzierr = sigzierr,
+                        smooth_factor = smooth_factor, splitf = splitf,
+                        stilt_wd = stilt_wd, time_integrate = time_integrate,
+                        timeout = timeout, tkerd = tkerd, tkern = tkern,
+                        tlfrac = tlfrac, tluverr = tluverr, tlzierr = tlzierr,
+                        tratio = tratio, tvmix = tvmix, varsiwant = varsiwant,
+                        veght = veght, vscale = vscale, w_option = w_option,
+                        xmn = xmn, xmx = xmx, xres = xres, ymn = ymn, ymx = ymx,
                         yres = yres, zicontroltf = zicontroltf, z_top = z_top,
                         zcoruverr = zcoruverr)
   q('no')
