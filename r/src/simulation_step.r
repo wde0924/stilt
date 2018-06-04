@@ -8,17 +8,20 @@
 #'
 #' @export
 
-# modification for OCO-2/X-STILT, Dien Wu
-# adding input variables including 'oco2.path', 'ak.wgt', 'pwf.wgt'
+# modification for OCO-2/X-STILT, Dien Wu, 06/01/2018
+# add input variables including 'oco2.path', 'ak.wgt', 'pwf.wgt'
 # extra functions including 'get.oco2.info()', 'get.ground.hgt()',
 #                           'get.wgt.funcv3()', 'wgt.trajec.footv3()'
+# add 'run_foot', if false, then no need to run footprint. DW, 06/04/2018
+
 # for debug --
 if(F){
   X = 1; r_run_time = receptors$run_time; r_lati = receptors$lati
   r_long = receptors$long; r_zagl = receptors$zagl
 }
+
 simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
-                            ak.wgt = NULL, conage = 48, cpack = 1, delt = 0,
+                            ak.wgt = NA, conage = 48, cpack = 1, delt = 0,
                             dxf = 1, dyf = 1, dzf = 0.01, emisshrs = 0.01,
                             frhmax = 3, frhs = 1, frme = 0.1, frmr = 0,
                             frts = 0.1, frvs = 0.1, hnf_plume = T,
@@ -30,12 +33,11 @@ simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
                             maxpar = 10000, met_file_format, met_loc,
                             mgmin = 2000, n_hours = -24, n_met_min = 1,
                             ncycl = 0, ndump = 0, ninit = 1, nturb = 0,
-                            numpar = 200, oco2.path = NULL, oco2.ver = NULL,
-                            outdt = 0, outfrac = 0.9,
-                            output_wd = file.path(stilt_wd, 'out'), p10f = 1,
-                            projection = '+proj=longlat', pwf.wgt = NULL,
+                            numpar = 200, oco2.path = NA, outdt = 0,
+                            outfrac = 0.9, output_wd = file.path(stilt_wd,'out'),
+                            p10f = 1, projection = '+proj=longlat', pwf.wgt = NA,
                             qcycle = 0, r_run_time, r_lati, r_long, r_zagl,
-                            random = 1, run_trajec = T,
+                            random = 1, run_foot = T, run_trajec = T,
                             siguverr = NA, sigzierr = NA, smooth_factor = 1,
                             splitf = 1, time_integrate = F, timeout = 3600,
                             tkerd = 0.18, tkern = 0.18, tlfrac = 0.1,
@@ -214,7 +216,7 @@ simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
     # footprint, added by Dien Wu, 06/01/2018
 
     if (length(r_zagl) > 1) {
-      # get OCO-2 profile first according to lat.lon of receptor, return a list
+      # get OCO-2 profile first according to lat/lon of receptor, return a list
       oco2.info <- get.oco2.info(oco2.path, receptor = output$receptor)
 
       if (is.null(oco2.info)) {
@@ -234,36 +236,43 @@ simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
     }  # end if length(r_zagl) > 1
     ## ------------ END modifications for OCO-2/X-STILT -------------------- ##
 
+    # add run_foot for whether to generate footprint
+    if (run_foot) {
+      # Calculate near-field dilution height based on gaussian plume width
+      # approximation and recalculate footprint sensitivity for cases when the
+      # plume height is less than the PBL height scaled by veght
+      if (hnf_plume)
+        particle <- calc_plume_dilution(particle, numpar, r_zagl, veght)
 
-    # Calculate near-field dilution height based on gaussian plume width
-    # approximation and recalculate footprint sensitivity for cases when the
-    # plume height is less than the PBL height scaled by veght
-    if (hnf_plume)
-      particle <- calc_plume_dilution(particle, numpar, r_zagl, veght)
+      # Produce footprint --------------------------------------------------------
+      # Aggregate the particle trajectory into surface influence footprints. This
+      # outputs a .rds file, which can be read with readRDS() containing the
+      # resultant footprint and various attributes
+      foot_file <- file.path(rundir, paste0(basename(rundir), '_foot.nc'))
+      foot <- calc_footprint(particle, output = foot_file,
+                             r_run_time = r_run_time,
+                             smooth_factor = smooth_factor,
+                             time_integrate = time_integrate,
+                             xmn = xmn, xmx = xmx, xres = xres,
+                             ymn = ymn, ymx = ymx, yres = yres)
 
-    # Produce footprint --------------------------------------------------------
-    # Aggregate the particle trajectory into surface influence footprints. This
-    # outputs a .rds file, which can be read with readRDS() containing the
-    # resultant footprint and various attributes
-    foot_file <- file.path(rundir, paste0(basename(rundir), '_foot.nc'))
-    foot <- calc_footprint(particle, output = foot_file,
-                           r_run_time = r_run_time,
-                           smooth_factor = smooth_factor,
-                           time_integrate = time_integrate,
-                           xmn = xmn, xmx = xmx, xres = xres,
-                           ymn = ymn, ymx = ymx, yres = yres)
+      if (is.null(foot)) {
+        warning('No non-zero footprint values found within the footprint domain.')
+        cat('No non-zero footprint values found within the footprint domain.\n',
+            file = file.path(rundir, 'ERROR'))
+        return()
+      } else {
+        file.symlink(foot_file, file.path(output_wd, 'footprints',
+                                          basename(foot_file))) %>%
+          invisible()
+      } # end if is.null(foot)
 
-    if (is.null(foot)) {
-      warning('No non-zero footprint values found within the footprint domain.')
-      cat('No non-zero footprint values found within the footprint domain.\n',
-          file = file.path(rundir, 'ERROR'))
-      return()
+      invisible(gc())
+      return(foot)
     } else {
-      file.symlink(foot_file, file.path(output_wd, 'footprints',
-                                        basename(foot_file))) %>%
-        invisible()
-    }
-    invisible(gc())
-    return(foot)
-  })
+      cat('No need to generate footprint for this simulation.\n')
+      return()
+    }# end if run_foot
+
+  })  # try()
 }
