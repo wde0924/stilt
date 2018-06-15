@@ -2,7 +2,10 @@
 *.o
 *.so
 hymodelc
-out/*
-fortran/*
-_rslurm_stilt/*
+out
+fortran
+_rslurm_stilt
 ._*
+exe
+in
+plot

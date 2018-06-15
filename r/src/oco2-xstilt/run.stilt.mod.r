@@ -9,7 +9,7 @@ run.stilt.mod <- function(namelist){
 
   # User inputs ----------------------------------------------------------------
   stilt_wd <- namelist$workdir
-  output_wd <- namelist$output_wd
+  output_wd <- namelist$outdir
   lib.loc <- .libPaths()[1]
   receptors <- namelist$recp.info
 
@@ -21,7 +21,7 @@ run.stilt.mod <- function(namelist){
 
   # Model control
   rm_dat     <- T
-  timeout    <- 3600
+  timeout    <- 4320  # in sec
   run_trajec <- namelist$run_trajec
   run_foot   <- namelist$run_foot
   n_hours    <- namelist$nhrs
