@@ -51,11 +51,14 @@ timestr <- paste0(timestr, formatC(oco2.hr, width = 2, flag = 0))
 columnTF   <- T    # whether a column receptor or fixed receptor
 forwardTF  <- F    # forward or backward traj, if forward, release from a box
 windowTF   <- F    # whether to release particles every ?? minutes,'dhr' in hours
-run_foot   <- F    # whether to generate footprint
-run_trajec <- T	   # T:rerun hymodelc, even if particle location object found
+
+run_trajec <- F	   # T:rerun hymodelc, even if particle location object found
                    # F:re-use previously calculated particle location object
+run_foot   <- T    # whether to generate footprint
+run_sim    <- T    # whether to calculate simulated XCO2.ff
+
 delt <- 2          # fixed timestep [min]; set = 0 for dynamic timestep
-nhrs <- -72        # number of hours backward (-) or forward (+)
+nhrs <- -24        # number of hours backward (-) or forward (+)
 
 # copy for running trajwind() or trajec()
 # can be a vector with values denoting copy numbers
@@ -94,7 +97,7 @@ if (errTF) {
 
   ## add errors, mainly siguverr, create a subroutine to compute siguverr
   # from model-data wind comparisons
-  errpath <- file.path(homedir, 'lin-group1/wde/STILT_input/wind_err')
+  errpath <- file.path(homedir, 'lin-group1/wde/input_data/wind_err')
   errpath <- file.path(errpath, tolower(site), tolower(met))
 
   # call get.SIGUVERR() to interpolate most near-field wind errors
@@ -120,22 +123,25 @@ if (errTF) {
   sigzierr <- NA; TLzierr <- NA; horcorzierr <- NA
 }  # end if errTF
 
-
+cat('step 3')
 #------------------------------ STEP 4 --------------------------------------- #
-oco2.path <- NA
-if (columnTF) {
-  # path for input data, OCO-2 Lite file
-  oco2.ver <- c('b7rb', 'b8r')[1]  # OCO-2 version
-  oco2.str <- paste0('OCO-2/OCO2_lite_', oco2.ver)
-  oco2.path <- file.path(homedir, 'lin-group1/wde/STILT_input', oco2.str)
-}
-
 #### CHANGE METFILES ***
 # path for the ARL format of WRF and GDAS, CANNOT BE TOO LONG ***
 met.path <- file.path(homedir, 'u0947337', met)
 if (met == 'gdas0p5') met.format <- '%Y%m%d_gdas0p5' # met file convention
 met.num <- 1
 
+# path for storing trajec, foot
+outdir <- file.path(workdir, 'out')
+
+oco2.path <- NA
+if (columnTF) {
+  # path for input data, OCO-2 Lite file
+  oco2.ver <- c('b7rb', 'b8r')[1]  # OCO-2 version
+  oco2.str <- paste0('OCO-2/L2/OCO2_lite_', oco2.ver)
+  oco2.path <- file.path(homedir, 'lin-group1/wde/input_data', oco2.str)
+}
+cat('step 4')
 
 #------------------------------ STEP 5 --------------------------------------- #
 #### Set model receptors, AGLs and particel numbers ***
@@ -157,7 +163,7 @@ if (columnTF) {
 
   # vertical spacing below and above cutoff level 'midagl', in METERS
   dh   <- c(100, 500)
-  dpar <- 100           # particle numbers per level
+  dpar <- c(10, 50, 100, 200)[3]           # particle numbers per level
 
   # compute the agl list
   agl  <- list(c(seq(minagl, midagl, dh[1]), seq(midagl+dh[2], maxagl, dh[2])))
@@ -168,7 +174,6 @@ if (columnTF) {
 ## eyeball lat range for enhanced XCO2, or grab from available forward-time runs
 # place denser receptors during this lat range (40pts in 1deg)
 selTF <- T  # whether select receptors; or simulate all soundings
-
 if (selTF) {
   # lat range in deg N for placing denser receptors, required for backward run
   if (site == 'Riyadh') peak.lat <- c(24.5, 25)
@@ -184,6 +189,7 @@ if (selTF) {
                  seq(peak.lat[1], peak.lat[2], 1/num.peak),
                  seq(peak.lat[1], lon.lat[4],  1/num.bg))
 } else {recp.indx <- NULL}
+cat('step 5')
 
 #------------------------------ STEP 6 --------------------------------------- #
 #### Footprint grid settings
@@ -194,7 +200,7 @@ foot.res <- 1/120  # footprint resolution, 1km for ODIAC
 # foot.info <- c(xmn, xmx, ymn, ymx, xres, yres)
 #        i.e., c(minlon, maxlon, minlat, maxlat, lon.res, lat.res)
 #if (site == 'Riyadh')foot.info <- c(30, 55, 10, 50, 1/120, 1/120)
-if (site == 'Riyadh') foot.info <- c(40, 50, 20, 30, rep(foot.res, 2))
+if (site == 'Riyadh') foot.info <- c(40, 50, 17, 27, rep(foot.res, 2))
 if (site == 'Cairo') foot.info <- c(0, 60, 0, 50, rep(foot.res, 2))
 if (site == 'PRD') foot.info <- c(10, 50, 20, 130, rep(foot.res, 2))
 if (site == 'Jerusalem') foot.info <- c(0, 60, 0, 50, rep(foot.res, 2))
@@ -205,7 +211,7 @@ if (columnTF) {
   ak.wgt  <- T
   pwf.wgt <- T
 }
-hnf_plume      <- T  # whether turn on hyper near-field (HNP) for mising hgts
+hnf_plume      <- F  # whether turn on hyper near-field (HNP) for mising hgts
 smooth_factor  <- 1  # Gaussian smooth factor
 time_integrate <- T  # whether integrate footprint along time
 projection     <- '+proj=longlat'
@@ -219,13 +225,14 @@ nl <- list(agl = agl, ak.wgt = ak.wgt, delt = delt, dpar = dpar, dtime = dtime,
            forwardTF = forwardTF, hnf_plume = hnf_plume, homedir = homedir,
            horcoruverr = horcoruverr, horcorzierr = horcorzierr,
            lon.lat = lon.lat, met.format = met.format, met.num = met.num,
-           met.path = met.path, nhrs = nhrs, numpar = numpar,
+           met.path = met.path, nhrs = nhrs, numpar = numpar, outdir = outdir,
            oco2.path = oco2.path, projection = projection, pwf.wgt = pwf.wgt,
-           recp.indx = recp.indx, run_foot = run_foot, run_trajec = run_trajec,
-           selTF = selTF, siguverr = siguverr, sigzierr = sigzierr, site = site,
-           smooth_factor = smooth_factor, time_integrate = time_integrate,
-           timestr = timestr, TLuverr = TLuverr, TLzierr = TLzierr,
-           windowTF = windowTF, workdir = workdir, zcoruverr = zcoruverr)
+           recp.indx = recp.indx, run_foot = run_foot, run_sim = run_sim,
+           run_trajec = run_trajec, selTF = selTF, siguverr = siguverr,
+           sigzierr = sigzierr, site = site, smooth_factor = smooth_factor,
+           time_integrate = time_integrate, timestr = timestr,
+           TLuverr = TLuverr, TLzierr = TLzierr, windowTF = windowTF,
+           workdir = workdir, zcoruverr = zcoruverr)
 
 #------------------------------ STEP 8 --------------------------------------- #
 ## call get.more.namelist() to get more info about receptors
@@ -238,8 +245,8 @@ if (forwardTF == F) {
   nl$recp.num <- NULL    # can be a number for max num of receptors
 
   ## use Ben's algorithm for parallel simulation settings
-  n_nodes  <- 6
-  n_cores  <- 12
+  n_nodes  <- 7
+  n_cores  <- 10
   job.time <- '48:00:00'
   slurm    <- n_nodes > 1
 
@@ -248,11 +255,12 @@ if (forwardTF == F) {
 
   # select satellite soundings, plotTF for whether plotting OCO-2 observed XCO2
   nl <- recp.to.namelist(namelist = nl, plotTF = F)
-
   cat('Done with creating namelist...\n')
-  run.stilt.mod(namelist = nl)  # call run_stilt_mod()
 
-} else {
+  # call run_stilt_mod(), start running trajec and foot
+  if (run_trajec | run_foot) run.stilt.mod(namelist = nl)
+
+} else if (forwardTF) {
 
   ## if for forward time runs and determining backgorund XCO2
   # plotTF for whether plotting urban plume & obs XCO2 if calling forward function
@@ -263,4 +271,21 @@ if (forwardTF == F) {
   run.forward.trajec(namelist = nl, plotTF = T)
 }  # end if forwardTF
 
-# end of running trajec
+#------------------------------ STEP 9 --------------------------------------- #
+# Simulate XCO2.ff using ODIAC emissions, DW, 06/04/2018
+## add FFCO2 emissions, e.g., ODIAC
+if (run_sim) {
+
+  footpath <- file.path(workdir, 'plot/foot/24hrs_back/100dpar')
+  #footpath <- file.path(workdir, 'out', 'footprints')
+  footfile <- list.files(footpath, pattern = substr(timestr, 1, 8))
+
+  # call func to match ODIAC emissions with xfoot & sum up to get 'dxco2.ff'
+  txtfile <- file.path(workdir, paste0(timestr, '_', site, '_XCO2ff_', dpar,
+                       'dpar.txt'))
+  xco2.ff <- foot.odiacv2(footpath, footfile, emiss.ext = c(0, 60, 0, 50),
+   workdir, timestr, txtfile, storeTF = T, res = foot.res)
+
+}
+
+# end of script

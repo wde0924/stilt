@@ -214,19 +214,26 @@ simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
     ## ---------------- modifications for OCO-2/X-STILT -------------------- ##
     # Weight footprint: call wgt.trajec.footv3() to weight trajec-level
     # footprint, added by Dien Wu, 06/01/2018
-
     if (length(r_zagl) > 1) {
-      # get OCO-2 profile first according to lat/lon of receptor, return a list
-      oco2.info <- get.oco2.info(oco2.path, receptor = output$receptor)
+      # check whether weighted trajec exists already
+      wgtfile <- gsub('_traj.rds', '_wgttraj.rds', output$file)
 
-      if (is.null(oco2.info)) {
-        warning('NO OCO-2 info found for a given receptor lat/lon'); return()
-      }
+      if (file.exists(wgtfile)) {
+        wgt.output <- readRDS(wgtfile)
 
-      # call weight.trajecfootv3() to start weighting trajec-level footprint,
-      # before calculating 2D footprint; ak.wgt and pwf.wgt as weighting flags
-      wgt.output <- wgt.trajec.footv3(output = output, oco2.info = oco2.info,
-                                      ak.wgt = ak.wgt, pwf.wgt = pwf.wgt)
+      } else {
+        # get OCO-2 profile first according to lat/lon of receptor, return a list
+        oco2.info <- get.oco2.info(oco2.path, receptor = output$receptor)
+
+        if (is.null(oco2.info)) {
+          warning('NO OCO-2 info found for a given receptor lat/lon'); return()
+        } # end if is.null
+
+        # call weight.trajecfootv3() to start weighting trajec-level footprint,
+        # before calculating 2D footprint; ak.wgt and pwf.wgt as weighting flags
+        wgt.output <- wgt.trajec.footv3(output = output, oco2.info = oco2.info,
+                                        ak.wgt = ak.wgt, pwf.wgt = pwf.wgt)
+      }  # end if file.exists()
 
       ## returns the ak pw profiles at for all levels & the weighted footprint
       combine.prof <- wgt.output$wgt.prof	 # all vertical profs, ak, pw, apriori
