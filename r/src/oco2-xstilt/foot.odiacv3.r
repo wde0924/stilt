@@ -16,9 +16,8 @@
 # fix footprint lat/lon to lower lefts, as Ben uses centered lat/lon
 # use raster rather than nc_open, DW, 06/19/2018
 
-foot.odiacv3 <- function(foot.path, foot.file, emiss.file,
-  emiss.ext = c(0, 60, 0, 50),
-  workdir, timestr, txtfile, storeTF){
+foot.odiacv3 <- function(foot.path, foot.file, emiss.file, workdir,
+  store.path = file.path(workdir, 'plot', 'foot_emiss'), txtfile){
 
   library(raster)
 
@@ -51,35 +50,37 @@ foot.odiacv3 <- function(foot.path, foot.file, emiss.file,
 
     # read in footprint
     foot.dat <- raster(file.path(foot.path, foot.file[r]))
+    crs(foot.dat) <- '+proj=longlat'
+    #extent(foot.dat) <- extent(emiss.dat)
+    plot(log10(foot.dat))
 
     # NOW, foot and emiss should have the same dimension,
     # multiple them to get contribution map of CO2 enhancements
+    if (extent(emiss.dat) == extent(foot.dat)) {
+      xco2.ff.sp <- raster::overlay(x = emiss.dat, y = foot.dat,
+        fun = function(x, y){return(x * y)})    # spatial xco2.ff
+      #plot(log10(xco2.ff.sp))
+
+    } else {
+      cat(paste('Foot and emiss grid have different domain, please check...\n'))
+      next
+      if (r == nrow(receptor)) return()
+    } # end if check domain
+
     # sum the map to get the XCO2 enhancements,
     # note that AK and PW have been incorporated in footprint
-    xco2.ff <- raster::overlay(x = emiss.dat, y = foot.dat,
-      fun = function(x, y){return(x * y)})
-    #plot(log10(xco2.ff.raster))
-
-    xco2.ff.array <- raster::as.matrix(xco2.ff.raster)
-    receptor$xco2.ff[r] <- sum(xco2.ff.array)
-    print(sum(xco2.ff.array))
+    tmp.xco2.ff <- sum(getValues(xco2.ff.sp))
+    receptor$xco2.ff[r] <- tmp.xco2.ff
+    print(tmp.xco2.ff)
 
     ### store emission * column footprint = XCO2 contribution grid into .nc file
-    if(storeTF){
-      filenm <- gsub('foot', 'foot_emiss', foot.file[r])
-      filenm <- file.path(workdir, 'plot', 'foot_emiss', filenm)
+    outname <- gsub('foot', 'foot_emiss', foot.file[r])
+    outfile <- file.path(store.path, outname)
 
-      # define dimnames
-      x <- ncdim_def("lon", "degreesE", seq(xmn, xmx - emiss.res, emiss.res))
-      y <- ncdim_def("lat", "degreesN", seq(ymn, ymx - emiss.res, emiss.res))
-
-      # flip 2D foot and store footprint in [LAT, LON]
-      vars <- ncvar_def(name = "xco2", units = "PPM", list(x, y),
-                        longname = "XCO2 enhancemnets due to ODIAC emission")
-      ncnew <- nc_create(filename = filenm, vars = vars)
-      ncvar_put(nc = ncnew, varid = vars, vals = xco2.ff.array)
-      nc_close(ncnew)   # close our netcdf4 file
-    }  # end if storeTF
+    crs(xco2.ff.sp) <- '+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0'
+    writeRaster(xco2.ff.sp, outfile, overwrite = TRUE, format = "CDF",
+      varname = "xco2", varunit = "PPM", xname = "lon", yname = "lat",
+      longname = 'XCO2 enhancemnets due to ODIAC emission')
   }  # end for r
 
   # finally, write in a txt file

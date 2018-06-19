@@ -11,7 +11,7 @@
 # use raster to read tif file, instead of rgdal
 
 
-tif2nc.odiacv2 <- function(timestr, foot.info, workdir,
+tif2nc.odiacv2 <- function(timestr, foot.path, foot.file, workdir,
   store.path = file.path(workdir, 'in'), tiff.path, vname, site){
 
   library(Hmisc); library(raster)
@@ -19,10 +19,6 @@ tif2nc.odiacv2 <- function(timestr, foot.info, workdir,
   YYYYMM <- substr(timestr, 1, 6)
   mod <- Hmisc::monthDays(as.Date(paste0(substr(timestr, 1, 4), '-',
     substr(timestr, 5, 6), '-', substr(timestr, 7, 8))))
-
-  # foot.info from namelist, input from main script
-  minlon <- foot.info[1]; maxlon <- foot.info[2]
-  minlat <- foot.info[3]; maxlat <- foot.info[4]
 
   # path and filename of the 1km GeoTiff ODIAC
   gzfile <- list.files(path = tiff.path, pattern = substr(timestr, 3, 6))
@@ -32,7 +28,7 @@ tif2nc.odiacv2 <- function(timestr, foot.info, workdir,
   gzTF <- F # whether to unzip tiff file, initialize with F
 
   if (!file.exists(file.path(store.path, rds.file))) {
-    cat(paste('convert.tif2rds.odiac(): working on file', gzfile, '...\n'))
+    cat(paste('tif2rds.odiac(): working on file', gzfile, '...\n'))
 
     if (grepl('.gz', gzfile)) {   # unzip gz file
 
@@ -63,11 +59,11 @@ tif2nc.odiacv2 <- function(timestr, foot.info, workdir,
   } # end if !file.exists()
 
   # subset spatial domain
-  SEL <- extent(foot.info[1], foot.info[2], foot.info[3], foot.info[4])
-  sel.emiss <- crop(emiss, SEL)
+  foot.extent <- extent(raster(file.path(foot.path, foot.file[1])))
+  sel.emiss <- crop(emiss, foot.extent)
 
   # return the area map as [LON, LAT]
-  cat('convert.tif2nc.odiac(): calculating the area...\n')
+  cat('tif2nc.odiac(): calculating the area...\n')
   res <- res(sel.emiss)[1]
   ext <- sel.emiss@extent
   area.co2 <- area(res = res, start.lon = ext@xmin,

@@ -15,7 +15,7 @@ source('r/dependencies.r') # source all functions
 #------------------------------ STEP 1 --------------------------------------- #
 #### CHOOSE CITIES, SEARCH FOR TRACKS AND OCO-2 LITE FILE VERSION ***
 # one can add more urban regions here
-indx  <- 12
+indx  <- 1
 site <- c(
   'Riyadh', 'Medina',  'Mecca', 'Cairo',   'Jerusalem',    # 1-5
   'PRD',    'Beijing', 'Xian',  'Lanzhou', 'Mumbai',       # 6-10
@@ -75,7 +75,7 @@ if (plotTF) for(t in 1:length(all.timestr)){
 }
 
 # *** NOW choose the timestr that you would like to work on...
-tt <- 4
+tt <- 3
 timestr <- all.timestr[tt]
 
 cat(paste('Working on:', timestr, 'for city/region:', site, '...\n\n'))
@@ -87,7 +87,7 @@ cat('Done with choosing cities & overpasses...\n')
 columnTF   <- T    # whether a column receptor or fixed receptor
 forwardTF  <- F    # forward or backward traj, if forward, release from a box
 windowTF   <- F    # whether to release particles every ? minutes,'dhr' in hours
-run_trajec <- F	   # T:rerun hymodelc, even if particle location object found
+run_trajec <- T	   # T:rerun hymodelc, even if particle location object found
   # F:re-use previously calculated particle location object
 run_foot   <- T    # whether to generate footprint
 run_sim    <- F    # whether to calculate simulated XCO2.ff
@@ -147,7 +147,7 @@ if (errTF) {
   # call get.SIGUVERR() to interpolate most near-field wind errors
   err.info <- get.siguverr(site = site, forwardTF = F, gdaspath = err.path,
     nfTF = F, timestr = timestr)
-    
+
   if (is.null(err.info)) {
     cat('no wind error found; make consevative assumption of siguverr...\n')
     # make a conservative assumption about the wind error, for the Middle East
@@ -250,6 +250,7 @@ time_integrate <- T  # whether integrate footprint along time
 projection     <- '+proj=longlat'
 cat('Done with footprint setup...\n')
 
+
 #------------------------------ STEP 6 --------------------------------------- #
 #### !!! NO NEED TO CHANGE ANYTHING LISTED BELOW -->
 # create a namelist including all variables
@@ -266,6 +267,7 @@ namelist <- list(agl = agl, ak.wgt = ak.wgt, delt = delt, dpar = dpar,
   smooth_factor = smooth_factor, time_integrate = time_integrate,
   timestr = timestr, TLuverr = TLuverr, TLzierr = TLzierr, windowTF = windowTF,
   workdir = workdir, zcoruverr = zcoruverr)
+
 
 #------------------------------ STEP 7 --------------------------------------- #
 ## call get.more.namelist() to get more info about receptors
@@ -305,13 +307,17 @@ if (forwardTF == F) {
   run.forward.trajec(namelist = namelist, plotTF = T)
 }  # end if forwardTF
 
+
 #------------------------------ STEP 8 --------------------------------------- #
 # Simulate XCO2.ff using ODIAC emissions, DW, 06/04/2018
 ## add FFCO2 emissions, e.g., ODIAC
 if (run_sim) {
 
-  #foot.path <- file.path(workdir, 'plot/foot/24hrs_back/100dpar')
-  foot.path <- file.path(workdir, 'out', 'footprints')
+  dpar <- 50
+  nhrs.back <- 24  # absolute number
+  foot.path <- file.path(workdir, paste0('plot/foot/', nhrs.back, 'hrs_back/',
+    dpar, 'dpar/', site))
+  #foot.path <- file.path(workdir, 'out', 'footprints')
   foot.file <- list.files(foot.path, pattern = substr(timestr, 1, 8))
 
   # call func to match ODIAC emissions with xfoot & sum up to get 'dxco2.ff'
@@ -322,17 +328,18 @@ if (run_sim) {
   vname <- '2017'
   tiff.path <- file.path(homedir, paste0('lin-group1/group_data/ODIAC/ODIAC',
     vname), substr(timestr, 1,4))  # tif file from ODIAC website
-  store.path <- file.path(workdir, 'in') # path for storing nc format ODIAC
 
-  source('r/dependencies.r') # source all functions
-  emiss.file <- tif2nc.odiacv2(timestr, foot.info, workdir, store.path,
-    tiff.path, vname, site)
+  # call tif2nc.odiacv2() to subset and get emiss file name
+  # 'store.path' is the path for outputting emissions
+  cat('Start reading and subsetting emissions that match foot...\n')
+  emiss.file <- tif2nc.odiacv2(timestr, workdir, foot.path, foot.file,
+    store.path = file.path(workdir, 'in'), tiff.path, vname, site)
 
   # reformatted ODIAC emissions file name should include 'YYYYMM'
-  xco2.ff <- foot.odiacv2(foot.path, foot.file, emiss.file,
-    emiss.ext = c(0, 60, 0, 50),
-    workdir, timestr, txtfile, storeTF = T, res = foot.res)
+  # 'store.path' here is the path for storing nc format foot * emission
+  cat('Start XCO2.ff simulations...\n')
+  xco2.ff <- foot.odiacv3(foot.path, foot.file, emiss.file, workdir,
+    store.path = file.path(workdir, 'plot', 'foot_emiss'), txtfile)
 
 }
-
 # end of script
