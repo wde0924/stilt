@@ -9,11 +9,15 @@ if (!'stilt_wd' %in% ls())
 
 ### Source r/src R scripts for Ben's STILT-R v2
 rsc <- dir(file.path(stilt_wd, 'r', 'src'), pattern = '.*\\.r$',
-           full.names = T)
+  full.names = T)
 
 ### Source r/src R scripts for Dien's X-STILT, 05/23/2018, DW
 rsc <- c(rsc, dir(file.path(stilt_wd, 'r', 'src', 'oco2-xstilt'),
-              pattern = '.*\\.r$', full.names = T))
+  pattern = '.*\\.r$', full.names = T))
+
+### Source r/src R scripts for Dien's X-STILT, 05/23/2018, DW
+rsc <- c(rsc, dir(file.path(stilt_wd, 'plot', 'src'),
+  pattern = '.*\\.r$', full.names = T))
 
 invisible(lapply(rsc, source))
 
@@ -21,7 +25,7 @@ invisible(lapply(rsc, source))
 if (!'lib.loc' %in% ls())
   lib.loc <- NULL
 load_libs('dplyr', 'ncdf4', 'parallel', 'raster', 'readr', 'rslurm', 'uataq',
-          'ggplot2', 'Hmisc', 'ggmap', 'geosphere', lib.loc = lib.loc)
+          'ggplot2', 'Hmisc', 'ggmap', 'geosphere', 'reshape', lib.loc = lib.loc)
 # add few other packages for OCO-2/XSTILT, DW, 05/23/2018
 
 ### Load permute fortran dll for footprint matrix permutation

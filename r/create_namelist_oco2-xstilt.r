@@ -5,7 +5,6 @@
 # latest modification on 06/03/2018
 # !!! need to clear up codes for forward run, based on Ben's parallel computing
 
-
 #### source all functions and load all libraries
 # CHANGE working directory ***
 homedir <- '/uufs/chpc.utah.edu/common/home'
@@ -14,51 +13,86 @@ setwd(workdir)   # move to working directory
 source('r/dependencies.r') # source all functions
 
 #------------------------------ STEP 1 --------------------------------------- #
-#### CHOOSE CITIES, TRACKS AND OCO-2 LITE FILE VERSION ***
-# one can add other urban regions here
-indx  <- 1
-site  <- c('Riyadh', 'Cairo', 'PRD', 'Jerusalem')[indx]
-met   <- c('1km', 'gdas1', 'gdas0p5')[3]  # customized WRF, 1 or 0.5deg GDAS
+#### CHOOSE CITIES, SEARCH FOR TRACKS AND OCO-2 LITE FILE VERSION ***
+# one can add more urban regions here
+indx  <- 12
+site <- c(
+  'Riyadh', 'Medina',  'Mecca', 'Cairo',   'Jerusalem',    # 1-5
+  'PRD',    'Beijing', 'Xian',  'Lanzhou', 'Mumbai',       # 6-10
+  'Indy',   'Phoenix', 'SLC',   'Denver',  'LA',           # 11-15
+  'Seattle' )[indx]                                        # 16-more
 
-# CHOOSE OVERPASSED TIMESTR
-tt <- 2   # which track to model
+# OCO-2 version, path
+oco2.ver <- c('b7rb', 'b8r')[1]  # OCO-2 version
+oco2.str  <- paste0('OCO-2/L2/OCO2_lite_', oco2.ver)
+oco2.path <- file.path(homedir, 'lin-group1/wde/input_data', oco2.str)
 
-# input all track numbers to be modeled, can be YYYYMMDD OR YYYYMMDDHH ***
-# track timestr can also be grabbed from another script
-riyadh.timestr <- c('20141227', '20141229', '20150128', '20150817', '20151112',
-                    '20151216', '20160115', '20160216', '20160725', '20161031')[tt]
-jerusalem.timestr <- c('20150615', '20150624', '20150717', '20150726',
-                       '20160601', '20160610', '20160703', '20160712',
-                       '20170417', '20170528', '20170620', '20170629')[tt]
-cairo.timestr <- c('20150228', '20150318', '20160224')[tt]
-prd.timestr <- '20150115'
+# date range for searching OCO-2 tracks, min, max YYYYMMDD
+date.range <- c('20140101', '20181231')
 
-# final timestr, YYYYMMDD and file strings for trajec
-timestr <- c(riyadh.timestr, cairo.timestr, prd.timestr, jerusalem.timestr)[indx]
+# vector of examined region, c(minlon, maxlon, minlat, maxlat, citylon, citylat)
+lon.lat <- NULL  # can be NULL, default will be given in site.info()
 
-# spatial domains placing receptors and city center, help select OCO-2 data ***
-# in form of 'lon.lat <- c(minlon, maxlon, minlat, maxlat, city.lon, city.lat)'
-if (site == 'Riyadh') {lon.lat <- c(45, 50, 23, 26, 46.75, 24.71); oco2.hr = 10}
-if (site == 'Cairo') {lon.lat <- c(30, 32, 29, 31, NA, NA); oco2.hr = 10}
-if (site == 'PRD') {lon.lat <- c(112, 115, 22, 23, NA, NA); oco2.hr = 5}
-if (site == 'Jerusalem') {lon.lat <- c(35, 36, 31.75, 32.25, 35.22, 31.78);
-                          oco2.hr = 10}
-timestr <- paste0(timestr, formatC(oco2.hr, width = 2, flag = 0))
+# 'thred.count' for at least how many soundings needed per 1deg lat range
+# -> calculate a total thred on total # of soundings given 'lon.lat'
+thred.per.count <- 100  # number of soundings per degree
+
+# whether to re-search OCO-2 overpasses and output in txtfile
+# if FALSE, read timestr from existing txt file;
+# always TRUE, if doing first simulation for a new site
+searchTF <- F
+
+# whether search for overpasses over urban region,
+# defined as city.lat +/- dlat, city.lon +/- dlon
+urbanTF <- T; dlon <- 0.5; dlat <- 0.5
+
+# call get.site.info() to get lon.lat and OCO2 overpasses info
+# PLEASE add lat lon info in 'get.site.track'
+site.info <- get.site.track(site, oco2.ver, oco2.path, workdir, searchTF,
+  date.range, thred.per.count, lon.lat, urbanTF, dlon, dlat)
+
+# get coordinate info and OCO2 track info from result 'site.info'
+lon.lat <- site.info$lon.lat
+oco2.track <- site.info$oco2.track
+
+# one can further subset 'oco2.track' based on sounding # over near city center
+if (urbanTF) oco2.track <- oco2.track %>%
+  filter(tot.urban.count > 100) #%>% arrange(desc(tot.urban.count))
+
+# one can further subset 'oco2.track' based on data quality
+# see columns 'qf.count' or 'wl.count' in 'oco2.track'
+# e.g., choose overpasses that have 100 soundings with QF == 0, & get reordered
+oco2.track <- oco2.track %>% filter(qf.urban.count > 100)
+
+# finally narrow down and get timestr
+all.timestr <- oco2.track$timestr
+
+# once you have all timestr, you can choose whether to plot them on maps
+# this helps you choose which overpass to simulate first, see 'tt' below
+plotTF <- F
+if (plotTF) for(t in 1:length(all.timestr)){
+  ggmap.obs.xco2(site, timestr = all.timestr[t], oco2.path, lon.lat)
+}
+
+# *** NOW choose the timestr that you would like to work on...
+tt <- 4
+timestr <- all.timestr[tt]
+
+cat(paste('Working on:', timestr, 'for city/region:', site, '...\n\n'))
+cat('Done with choosing cities & overpasses...\n')
 
 
 #------------------------------ STEP 2 --------------------------------------- #
 #### Whether forward/backward, release from a column or a box
 columnTF   <- T    # whether a column receptor or fixed receptor
 forwardTF  <- F    # forward or backward traj, if forward, release from a box
-windowTF   <- F    # whether to release particles every ?? minutes,'dhr' in hours
-
+windowTF   <- F    # whether to release particles every ? minutes,'dhr' in hours
 run_trajec <- F	   # T:rerun hymodelc, even if particle location object found
-                   # F:re-use previously calculated particle location object
+  # F:re-use previously calculated particle location object
 run_foot   <- T    # whether to generate footprint
-run_sim    <- T    # whether to calculate simulated XCO2.ff
-
+run_sim    <- F    # whether to calculate simulated XCO2.ff
 delt <- 2          # fixed timestep [min]; set = 0 for dynamic timestep
-nhrs <- -24        # number of hours backward (-) or forward (+)
+nhrs <- -48        # number of hours backward (-) or forward (+)
 
 # copy for running trajwind() or trajec()
 # can be a vector with values denoting copy numbers
@@ -82,9 +116,19 @@ if (windowTF) {
   dtime <- seq(-10, 0, dhr)
   cat('Release particles', dtime[1], 'hrs ahead & every', dhr * 60, 'mins...\n')
 }  # end if windowTF
+cat('Done with choosing forward box OR backward column runs...\n')
 
 
 #------------------------------ STEP 3 --------------------------------------- #
+#### CHANGE PATHS ***
+# path for the ARL format of WRF and GDAS, CANNOT BE TOO LONG ***
+# simulation_step() will find corresponding met files
+met <- c('1km', 'gdas1', 'gdas0p5')[3]  # choose met fields
+met.path <- file.path(homedir, 'u0947337', met)
+met.num <- 1
+met.format <- '%Y%m%d_gdas0p5' # met file name convention
+outdir <- file.path(workdir, 'out')  # path for storing trajec, foot
+
 #### Whether obtaining wind errors, transport error component
 errTF <- F    # whether add wind error component to generate trajec
 if (errTF) {
@@ -97,12 +141,13 @@ if (errTF) {
 
   ## add errors, mainly siguverr, create a subroutine to compute siguverr
   # from model-data wind comparisons
-  errpath <- file.path(homedir, 'lin-group1/wde/input_data/wind_err')
-  errpath <- file.path(errpath, tolower(site), tolower(met))
+  err.path <- file.path(homedir, 'lin-group1/wde/input_data/wind_err')
+  err.path <- file.path(err.path, tolower(site), tolower(met))
 
   # call get.SIGUVERR() to interpolate most near-field wind errors
-  err.info <- get.siguverr(site = site, forwardTF = F, gdaspath = errpath,
-                           nfTF = F, timestr = timestr)
+  err.info <- get.siguverr(site = site, forwardTF = F, gdaspath = err.path,
+    nfTF = F, timestr = timestr)
+    
   if (is.null(err.info)) {
     cat('no wind error found; make consevative assumption of siguverr...\n')
     # make a conservative assumption about the wind error, for the Middle East
@@ -122,28 +167,10 @@ if (errTF) {
   siguverr <- NA; TLuverr <- NA; horcoruverr <- NA; zcoruverr <- NA
   sigzierr <- NA; TLzierr <- NA; horcorzierr <- NA
 }  # end if errTF
+cat('Done with choosing met & inputting wind errors...\n')
 
-cat('step 3')
+
 #------------------------------ STEP 4 --------------------------------------- #
-#### CHANGE METFILES ***
-# path for the ARL format of WRF and GDAS, CANNOT BE TOO LONG ***
-met.path <- file.path(homedir, 'u0947337', met)
-if (met == 'gdas0p5') met.format <- '%Y%m%d_gdas0p5' # met file convention
-met.num <- 1
-
-# path for storing trajec, foot
-outdir <- file.path(workdir, 'out')
-
-oco2.path <- NA
-if (columnTF) {
-  # path for input data, OCO-2 Lite file
-  oco2.ver <- c('b7rb', 'b8r')[1]  # OCO-2 version
-  oco2.str <- paste0('OCO-2/L2/OCO2_lite_', oco2.ver)
-  oco2.path <- file.path(homedir, 'lin-group1/wde/input_data', oco2.str)
-}
-cat('step 4')
-
-#------------------------------ STEP 5 --------------------------------------- #
 #### Set model receptors, AGLs and particel numbers ***
 # for backward fixed-level runs OR forward fixed-level runs
 # agl can be a vector, meaning releasing particles from several fixed level
@@ -151,7 +178,7 @@ cat('step 4')
 
 ### 1) if release particles from fixed levels
 agl <- 10
-numpar<- 1000       # par for each time window for forward box runs
+numpar <- 1000       # par for each time window for forward box runs
 
 ### 2) SET COLUMN RECEPTORS as a list, if release particles from a column
 if (columnTF) {
@@ -178,6 +205,8 @@ if (selTF) {
   # lat range in deg N for placing denser receptors, required for backward run
   if (site == 'Riyadh') peak.lat <- c(24.5, 25)
   if (site == 'Jerusalem') peak.lat <- c(31.75, 32.25)
+  if (site == 'Cairo') peak.lat <- c(29.5, 30.5)
+  if (site == 'Phoenix') peak.lat <- c(33, 34)
 
   # number of points to aggregate within 1deg over small/large enhancements,
   # i.e., over background/enhancements, binwidth will be 1deg/num
@@ -186,24 +215,27 @@ if (selTF) {
 
   # recp.indx: how to pick receptors from all screened soundings (QF = 0)
   recp.indx <- c(seq(lon.lat[3],  peak.lat[1], 1/num.bg),
-                 seq(peak.lat[1], peak.lat[2], 1/num.peak),
-                 seq(peak.lat[1], lon.lat[4],  1/num.bg))
-} else {recp.indx <- NULL}
-cat('step 5')
+    seq(peak.lat[1], peak.lat[2], 1/num.peak),
+    seq(peak.lat[1], lon.lat[4],  1/num.bg))
 
-#------------------------------ STEP 6 --------------------------------------- #
+} else {
+  recp.indx <- NULL
+}
+
+cat('Done with receptor setup...\n')
+
+#------------------------------ STEP 5 --------------------------------------- #
 #### Footprint grid settings
 ## SET spatial domains and resolution for calculating footprints
 foot.res <- 1/120  # footprint resolution, 1km for ODIAC
 
-# these variables will determine the numpix.x, numpix.y, lon.ll, lat.ll;
-# foot.info <- c(xmn, xmx, ymn, ymx, xres, yres)
-#        i.e., c(minlon, maxlon, minlat, maxlat, lon.res, lat.res)
-#if (site == 'Riyadh')foot.info <- c(30, 55, 10, 50, 1/120, 1/120)
-if (site == 'Riyadh') foot.info <- c(40, 50, 17, 27, rep(foot.res, 2))
-if (site == 'Cairo') foot.info <- c(0, 60, 0, 50, rep(foot.res, 2))
-if (site == 'PRD') foot.info <- c(10, 50, 20, 130, rep(foot.res, 2))
-if (site == 'Jerusalem') foot.info <- c(0, 60, 0, 50, rep(foot.res, 2))
+# these variables will determine resoluation and spatial domain of footprint
+# 10x10 degree domain around the city center
+foot.info <- data.frame(
+  xmn = round(lon.lat[5]) - 5, xmx = round(lon.lat[5]) + 5,
+  ymn = round(lon.lat[6]) - 5, ymx = round(lon.lat[6]) + 5,
+  xres = foot.res, yres = foot.res
+)
 
 ## whether weighted footprint by AK and PW for column simulations
 ak.wgt <- NA; pwf.wgt <- NA
@@ -211,30 +243,31 @@ if (columnTF) {
   ak.wgt  <- T
   pwf.wgt <- T
 }
-hnf_plume      <- F  # whether turn on hyper near-field (HNP) for mising hgts
+
+hnf_plume      <- T  # whether turn on hyper near-field (HNP) for mising hgts
 smooth_factor  <- 1  # Gaussian smooth factor
 time_integrate <- T  # whether integrate footprint along time
 projection     <- '+proj=longlat'
+cat('Done with footprint setup...\n')
 
-#------------------------------ STEP 7 --------------------------------------- #
+#------------------------------ STEP 6 --------------------------------------- #
 #### !!! NO NEED TO CHANGE ANYTHING LISTED BELOW -->
 # create a namelist including all variables
 # namelist required for generating trajec
-nl <- list(agl = agl, ak.wgt = ak.wgt, delt = delt, dpar = dpar, dtime = dtime,
-           dxyp = dxyp, errTF = errTF, foot.info = foot.info,
-           forwardTF = forwardTF, hnf_plume = hnf_plume, homedir = homedir,
-           horcoruverr = horcoruverr, horcorzierr = horcorzierr,
-           lon.lat = lon.lat, met.format = met.format, met.num = met.num,
-           met.path = met.path, nhrs = nhrs, numpar = numpar, outdir = outdir,
-           oco2.path = oco2.path, projection = projection, pwf.wgt = pwf.wgt,
-           recp.indx = recp.indx, run_foot = run_foot, run_sim = run_sim,
-           run_trajec = run_trajec, selTF = selTF, siguverr = siguverr,
-           sigzierr = sigzierr, site = site, smooth_factor = smooth_factor,
-           time_integrate = time_integrate, timestr = timestr,
-           TLuverr = TLuverr, TLzierr = TLzierr, windowTF = windowTF,
-           workdir = workdir, zcoruverr = zcoruverr)
+namelist <- list(agl = agl, ak.wgt = ak.wgt, delt = delt, dpar = dpar,
+  dtime = dtime, dxyp = dxyp, errTF = errTF, foot.info = foot.info,
+  forwardTF = forwardTF, hnf_plume = hnf_plume, homedir = homedir,
+  horcoruverr = horcoruverr, horcorzierr = horcorzierr, lon.lat = lon.lat,
+  met.format = met.format, met.num = met.num, met.path = met.path, nhrs = nhrs,
+  numpar = numpar, outdir = outdir, oco2.path = oco2.path,
+  projection = projection, pwf.wgt = pwf.wgt, recp.indx = recp.indx,
+  run_foot = run_foot, run_sim = run_sim, run_trajec = run_trajec,
+  selTF = selTF, siguverr = siguverr, sigzierr = sigzierr, site = site,
+  smooth_factor = smooth_factor, time_integrate = time_integrate,
+  timestr = timestr, TLuverr = TLuverr, TLzierr = TLzierr, windowTF = windowTF,
+  workdir = workdir, zcoruverr = zcoruverr)
 
-#------------------------------ STEP 8 --------------------------------------- #
+#------------------------------ STEP 7 --------------------------------------- #
 ## call get.more.namelist() to get more info about receptors
 # further read OCO-2 data
 # then get receptor info and other info for running trajec
@@ -242,23 +275,24 @@ nl <- list(agl = agl, ak.wgt = ak.wgt, delt = delt, dpar = dpar, dtime = dtime,
 if (forwardTF == F) {
 
   # whether to subset receptors when debugging
-  nl$recp.num <- NULL    # can be a number for max num of receptors
+  namelist$recp.num <- NULL   # can be a number for max num of receptors
+
+  # select satellite soundings, plotTF for whether plotting OCO-2 observed XCO2
+  namelist <- recp.to.namelist(namelist = namelist, plotTF = F)
 
   ## use Ben's algorithm for parallel simulation settings
   n_nodes  <- 7
-  n_cores  <- 10
+  n_cores  <- 11
   job.time <- '48:00:00'
   slurm    <- n_nodes > 1
 
-  nl$slurm_options <- list(time = job.time, account = 'lin-kp', partition = 'lin-kp')
-  nl <- c(nl, n_cores = n_cores, n_nodes = n_nodes, slurm = slurm)
-
-  # select satellite soundings, plotTF for whether plotting OCO-2 observed XCO2
-  nl <- recp.to.namelist(namelist = nl, plotTF = F)
+  namelist$slurm_options <- list(time = job.time, account = 'lin-kp',
+    partition = 'lin-kp')
+  namelist <- c(namelist, n_cores = n_cores, n_nodes = n_nodes, slurm = slurm)
   cat('Done with creating namelist...\n')
 
   # call run_stilt_mod(), start running trajec and foot
-  if (run_trajec | run_foot) run.stilt.mod(namelist = nl)
+  if (run_trajec | run_foot) run.stilt.mod(namelist = namelist)
 
 } else if (forwardTF) {
 
@@ -268,23 +302,36 @@ if (forwardTF == F) {
 
   # plotTF for whether to plot the forward urban plume
   cat('Generating forward trajec...\n')
-  run.forward.trajec(namelist = nl, plotTF = T)
+  run.forward.trajec(namelist = namelist, plotTF = T)
 }  # end if forwardTF
 
-#------------------------------ STEP 9 --------------------------------------- #
+#------------------------------ STEP 8 --------------------------------------- #
 # Simulate XCO2.ff using ODIAC emissions, DW, 06/04/2018
 ## add FFCO2 emissions, e.g., ODIAC
 if (run_sim) {
 
-  footpath <- file.path(workdir, 'plot/foot/24hrs_back/100dpar')
-  #footpath <- file.path(workdir, 'out', 'footprints')
-  footfile <- list.files(footpath, pattern = substr(timestr, 1, 8))
+  #foot.path <- file.path(workdir, 'plot/foot/24hrs_back/100dpar')
+  foot.path <- file.path(workdir, 'out', 'footprints')
+  foot.file <- list.files(foot.path, pattern = substr(timestr, 1, 8))
 
   # call func to match ODIAC emissions with xfoot & sum up to get 'dxco2.ff'
   txtfile <- file.path(workdir, paste0(timestr, '_', site, '_XCO2ff_', dpar,
-                       'dpar.txt'))
-  xco2.ff <- foot.odiacv2(footpath, footfile, emiss.ext = c(0, 60, 0, 50),
-   workdir, timestr, txtfile, storeTF = T, res = foot.res)
+    'dpar.txt'))
+
+  # before simulations, subset emissions and convert tif format to nc format
+  vname <- '2017'
+  tiff.path <- file.path(homedir, paste0('lin-group1/group_data/ODIAC/ODIAC',
+    vname), substr(timestr, 1,4))  # tif file from ODIAC website
+  store.path <- file.path(workdir, 'in') # path for storing nc format ODIAC
+
+  source('r/dependencies.r') # source all functions
+  emiss.file <- tif2nc.odiacv2(timestr, foot.info, workdir, store.path,
+    tiff.path, vname, site)
+
+  # reformatted ODIAC emissions file name should include 'YYYYMM'
+  xco2.ff <- foot.odiacv2(foot.path, foot.file, emiss.file,
+    emiss.ext = c(0, 60, 0, 50),
+    workdir, timestr, txtfile, storeTF = T, res = foot.res)
 
 }
 

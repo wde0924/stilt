@@ -9,3 +9,6 @@ _rslurm_stilt
 exe
 in
 plot
+*.png
+*.txt
+r/src/old

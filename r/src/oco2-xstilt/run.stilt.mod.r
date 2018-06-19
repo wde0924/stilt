@@ -44,12 +44,12 @@ run.stilt.mod <- function(namelist){
   zcoruverr   <- namelist$zcoruverr
 
   # Footprint grid settings
-  xmn            <- namelist$foot.info[1]
-  xmx            <- namelist$foot.info[2]
-  ymn            <- namelist$foot.info[3]
-  ymx            <- namelist$foot.info[4]
-  xres           <- namelist$foot.info[5]
-  yres           <- namelist$foot.info[6]
+  xmn            <- as.numeric(namelist$foot.info$xmn)
+  xmx            <- as.numeric(namelist$foot.info$xmx)
+  ymn            <- as.numeric(namelist$foot.info$ymn)
+  ymx            <- as.numeric(namelist$foot.info$ymx)
+  xres           <- as.numeric(namelist$foot.info$xres)
+  yres           <- as.numeric(namelist$foot.info$yres)
   hnf_plume      <- namelist$hnf_plume
   smooth_factor  <- namelist$smooth_factor
   time_integrate <- namelist$time_integrate
