@@ -21,7 +21,7 @@ run.stilt.mod <- function(namelist){
 
   # Model control
   rm_dat     <- T
-  timeout    <- 4320  # in sec
+  timeout    <- namelist$timeout  # in sec
   run_trajec <- namelist$run_trajec
   run_foot   <- namelist$run_foot
   n_hours    <- namelist$nhrs

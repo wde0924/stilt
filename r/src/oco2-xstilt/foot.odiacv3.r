@@ -52,14 +52,14 @@ foot.odiacv3 <- function(foot.path, foot.file, emiss.file, workdir,
     foot.dat <- raster(file.path(foot.path, foot.file[r]))
     crs(foot.dat) <- '+proj=longlat'
     #extent(foot.dat) <- extent(emiss.dat)
-    plot(log10(foot.dat))
+    #plot(log10(foot.dat))
 
     # NOW, foot and emiss should have the same dimension,
     # multiple them to get contribution map of CO2 enhancements
     if (extent(emiss.dat) == extent(foot.dat)) {
       xco2.ff.sp <- raster::overlay(x = emiss.dat, y = foot.dat,
         fun = function(x, y){return(x * y)})    # spatial xco2.ff
-      #plot(log10(xco2.ff.sp))
+      plot(log10(xco2.ff.sp))
 
     } else {
       cat(paste('Foot and emiss grid have different domain, please check...\n'))
@@ -71,7 +71,7 @@ foot.odiacv3 <- function(foot.path, foot.file, emiss.file, workdir,
     # note that AK and PW have been incorporated in footprint
     tmp.xco2.ff <- sum(getValues(xco2.ff.sp))
     receptor$xco2.ff[r] <- tmp.xco2.ff
-    print(tmp.xco2.ff)
+    #print(tmp.xco2.ff)
 
     ### store emission * column footprint = XCO2 contribution grid into .nc file
     outname <- gsub('foot', 'foot_emiss', foot.file[r])

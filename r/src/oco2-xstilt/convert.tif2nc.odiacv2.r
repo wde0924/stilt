@@ -10,9 +10,8 @@
 # use raster package that saves a lot of time, DW, 06/18/2018
 # use raster to read tif file, instead of rgdal
 
-
 tif2nc.odiacv2 <- function(timestr, foot.path, foot.file, workdir,
-  store.path = file.path(workdir, 'in'), tiff.path, vname, site){
+  store.path = file.path(workdir, 'in', 'ODIAC'), tiff.path, vname, site){
 
   library(Hmisc); library(raster)
 
@@ -91,10 +90,65 @@ tif2nc.odiacv2 <- function(timestr, foot.path, foot.file, workdir,
   if (gzTF) {
     # finally zip up the tif file
     cat('Zipping up.\n')
-    system(paste('gzip ', file.path(tiff.path, tiff.file), '.\n'))
+    system(paste0('gzip ', file.path(tiff.path, tiff.file)))
   }
   gc()
 
   # finally, return nc filename
   return(outfile)
 }
+
+
+
+
+
+
+# for converting tif plot
+if (F) {
+
+  timestr <- seq(as.Date('2014/01/01'), as.Date('2018/05/01'), by = 'month')
+  timestr <- format(timestr, '%Y%m%d')
+  YYYYMM <- substr(timestr, 1, 6)
+  homedir <- '/uufs/chpc.utah.edu/common/home'
+  workdir <- file.path(homedir, 'lin-group1/wde/github/stilt')
+  source('r/dependencies.r') # source all functions
+  tiff.path <- file.path(homedir, 'lin-group1/group_data/ODIAC/ODIAC2017',
+    substr(timestr, 1,4))  # tif file from ODIAC website
+  store.path <- file.path(workdir, 'in')
+
+  for (t in 1:length(tiff.path)) {
+
+    # path and filename of the 1km GeoTiff ODIAC
+    gzfile <- list.files(path = tiff.path[t], pattern = substr(timestr[t], 3, 6))
+
+    # check if RData file exist, no need to unzip and convert from tiff
+    rds.file <- paste0('ODIACv2017_', YYYYMM[t], '.rds')
+    cat(paste('tif2rds.odiac(): working on file', gzfile, '...\n'))
+
+    if (grepl('.gz', gzfile)) {   # unzip gz file
+      # always unzip to odiac directory, do not unzip to group_data
+      cat('Unzipping up...\n')
+      system(paste0('gunzip ', file.path(tiff.path[t], gzfile)))
+      tiff.file <- substr(gzfile, 1, nchar(gzfile) - 3)
+
+    } else {
+      tiff.file <- gzfile
+    } # end if gz
+
+    # after reading using readGDAL, the default dimension is (y,x)
+    # 21600 rows and 43200 columns
+    cat('Reading tiff as raster.\n')
+    emiss <- raster(file.path(tiff.path[t], tiff.file)) # convert to raster
+
+    # assign as RData file
+    cat('Saving emissions as RDS file, no need to unzip gz file next time.\n')
+    save(emiss, file = file.path(store.path, 'test.RData'))
+    save(emiss, file = file.path(store.path, rds.file))
+
+    # finally zip up the tif file
+    cat('Zipping up.\n')
+    system(paste0('gzip ', file.path(tiff.path[t], tiff.file)))
+    gc()
+  }  # end for t
+
+} # end if F

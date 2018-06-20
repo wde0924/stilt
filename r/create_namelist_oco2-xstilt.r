@@ -14,13 +14,13 @@ source('r/dependencies.r') # source all functions
 
 #------------------------------ STEP 1 --------------------------------------- #
 #### CHOOSE CITIES, SEARCH FOR TRACKS AND OCO-2 LITE FILE VERSION ***
-# one can add more urban regions here
 indx  <- 1
 site <- c(
   'Riyadh', 'Medina',  'Mecca', 'Cairo',   'Jerusalem',    # 1-5
   'PRD',    'Beijing', 'Xian',  'Lanzhou', 'Mumbai',       # 6-10
   'Indy',   'Phoenix', 'SLC',   'Denver',  'LA',           # 11-15
-  'Seattle' )[indx]                                        # 16-more
+  'Seattle'                                                # 16-more
+)[indx]  # one can add more urban regions here
 
 # OCO-2 version, path
 oco2.ver <- c('b7rb', 'b8r')[1]  # OCO-2 version
@@ -54,6 +54,7 @@ site.info <- get.site.track(site, oco2.ver, oco2.path, workdir, searchTF,
 # get coordinate info and OCO2 track info from result 'site.info'
 lon.lat <- site.info$lon.lat
 oco2.track <- site.info$oco2.track
+print(lon.lat)
 
 # one can further subset 'oco2.track' based on sounding # over near city center
 if (urbanTF) oco2.track <- oco2.track %>%
@@ -71,7 +72,8 @@ all.timestr <- oco2.track$timestr
 # this helps you choose which overpass to simulate first, see 'tt' below
 plotTF <- F
 if (plotTF) for(t in 1:length(all.timestr)){
-  ggmap.obs.xco2(site, timestr = all.timestr[t], oco2.path, lon.lat)
+  ggmap.obs.xco2(site, timestr = all.timestr[t], oco2.path, lon.lat, workdir,
+    plotdir = file.path(workdir, 'plot'))
 }
 
 # *** NOW choose the timestr that you would like to work on...
@@ -87,12 +89,13 @@ cat('Done with choosing cities & overpasses...\n')
 columnTF   <- T    # whether a column receptor or fixed receptor
 forwardTF  <- F    # forward or backward traj, if forward, release from a box
 windowTF   <- F    # whether to release particles every ? minutes,'dhr' in hours
-run_trajec <- T	   # T:rerun hymodelc, even if particle location object found
+run_trajec <- F	   # T:rerun hymodelc, even if particle location object found
   # F:re-use previously calculated particle location object
-run_foot   <- T    # whether to generate footprint
-run_sim    <- F    # whether to calculate simulated XCO2.ff
+run_foot   <- F    # whether to generate footprint
+run_sim    <- T    # whether to calculate simulated XCO2.ff
+
 delt <- 2          # fixed timestep [min]; set = 0 for dynamic timestep
-nhrs <- -48        # number of hours backward (-) or forward (+)
+nhrs <- -24        # number of hours backward (-) or forward (+)
 
 # copy for running trajwind() or trajec()
 # can be a vector with values denoting copy numbers
@@ -203,7 +206,7 @@ if (columnTF) {
 selTF <- T  # whether select receptors; or simulate all soundings
 if (selTF) {
   # lat range in deg N for placing denser receptors, required for backward run
-  if (site == 'Riyadh') peak.lat <- c(24.5, 25)
+  if (site == 'Riyadh') peak.lat <- c(24, 25)
   if (site == 'Jerusalem') peak.lat <- c(31.75, 32.25)
   if (site == 'Cairo') peak.lat <- c(29.5, 30.5)
   if (site == 'Phoenix') peak.lat <- c(33, 34)
@@ -221,8 +224,8 @@ if (selTF) {
 } else {
   recp.indx <- NULL
 }
-
 cat('Done with receptor setup...\n')
+
 
 #------------------------------ STEP 5 --------------------------------------- #
 #### Footprint grid settings
@@ -236,6 +239,10 @@ foot.info <- data.frame(
   ymn = round(lon.lat[6]) - 5, ymx = round(lon.lat[6]) + 5,
   xres = foot.res, yres = foot.res
 )
+# or customize foot domain, in deg E and deg N
+foot.info <- data.frame(xmn = 40, xmx = 50, ymn = 20, ymx = 30, xres = foot.res,
+  yres = foot.res)
+print(foot.info)
 
 ## whether weighted footprint by AK and PW for column simulations
 ak.wgt <- NA; pwf.wgt <- NA
@@ -280,18 +287,26 @@ if (forwardTF == F) {
   namelist$recp.num <- NULL   # can be a number for max num of receptors
 
   # select satellite soundings, plotTF for whether plotting OCO-2 observed XCO2
-  namelist <- recp.to.namelist(namelist = namelist, plotTF = F)
+  namelist <- recp.to.namelist(namelist, plotTF = F)
 
   ## use Ben's algorithm for parallel simulation settings
   n_nodes  <- 7
-  n_cores  <- 11
+  n_cores  <- 10
   job.time <- '48:00:00'
   slurm    <- n_nodes > 1
 
   namelist$slurm_options <- list(time = job.time, account = 'lin-kp',
     partition = 'lin-kp')
-  namelist <- c(namelist, n_cores = n_cores, n_nodes = n_nodes, slurm = slurm)
+
+  # time allowed for running hymodelc before forced terminations
+  timeout  <- 2 * 60 * 60  # in sec
+
+  namelist <- c(namelist, n_cores = n_cores, n_nodes = n_nodes, slurm = slurm,
+    timeout = timeout)
   cat('Done with creating namelist...\n')
+
+  if (run_trajec) cat('Need to generate trajec...\n')
+  if (run_foot) cat('Need to generate footprint...\n\n')
 
   # call run_stilt_mod(), start running trajec and foot
   if (run_trajec | run_foot) run.stilt.mod(namelist = namelist)
@@ -313,16 +328,20 @@ if (forwardTF == F) {
 ## add FFCO2 emissions, e.g., ODIAC
 if (run_sim) {
 
-  dpar <- 50
-  nhrs.back <- 24  # absolute number
-  foot.path <- file.path(workdir, paste0('plot/foot/', nhrs.back, 'hrs_back/',
-    dpar, 'dpar/', site))
-  #foot.path <- file.path(workdir, 'out', 'footprints')
+  #dpar <- 50
+  #nhrs <- -24
+  #foot.path <- file.path(workdir, paste0('plot/foot/', abs(nhrs), 'hrs_back/',
+  #  dpar, 'dpar/', site))
+  foot.path <- file.path(workdir, 'out', 'footprints')
   foot.file <- list.files(foot.path, pattern = substr(timestr, 1, 8))
 
-  # call func to match ODIAC emissions with xfoot & sum up to get 'dxco2.ff'
-  txtfile <- file.path(workdir, paste0(timestr, '_', site, '_XCO2ff_', dpar,
-    'dpar.txt'))
+  tmp.foot <- raster(file.path(foot.path, foot.file[1]))
+  foot.extent <- extent(tmp.foot)
+  cat('Done reading footprint.\n')
+
+  # txt file name for outputting model results
+  txtfile <- file.path(workdir, paste0(timestr, '_', site, '_XCO2ff_',
+    abs(nhrs), 'hrs_', dpar, 'dpar.txt'))
 
   # before simulations, subset emissions and convert tif format to nc format
   vname <- '2017'
@@ -332,11 +351,12 @@ if (run_sim) {
   # call tif2nc.odiacv2() to subset and get emiss file name
   # 'store.path' is the path for outputting emissions
   cat('Start reading and subsetting emissions that match foot...\n')
-  emiss.file <- tif2nc.odiacv2(timestr, workdir, foot.path, foot.file,
-    store.path = file.path(workdir, 'in'), tiff.path, vname, site)
+  emiss.file <- tif2nc.odiacv3(site, timestr, vname, workdir, foot.extent,
+    store.path = file.path(workdir, 'in', 'ODIAC'), tiff.path, gzTF = F)
 
   # reformatted ODIAC emissions file name should include 'YYYYMM'
   # 'store.path' here is the path for storing nc format foot * emission
+  # call func to match ODIAC emissions with xfoot & sum up to get 'dxco2.ff'
   cat('Start XCO2.ff simulations...\n')
   xco2.ff <- foot.odiacv3(foot.path, foot.file, emiss.file, workdir,
     store.path = file.path(workdir, 'plot', 'foot_emiss'), txtfile)

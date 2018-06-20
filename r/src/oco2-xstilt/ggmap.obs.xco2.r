@@ -1,6 +1,7 @@
 # script to plot observed XCO2 on map, DW
 
-ggmap.obs.xco2 <- function(site, timestr, oco2.path, lon.lat){
+ggmap.obs.xco2 <- function(site, timestr, oco2.path, lon.lat, workdir,
+  plotdir = file.path(workdir, 'plot')){
 
   library(ggmap); library(ggplot2)
 
@@ -82,7 +83,8 @@ ggmap.obs.xco2 <- function(site, timestr, oco2.path, lon.lat){
     title = element_text(size = font.size))
 
   picname <- paste0('ggmap_xco2_', site, '_', timestr, '.png')
-  print(picname)
-  ggsave(c2, filename = picname, width = 11, height = 12)
+  picfile <- file.path(plotdir, picname)
+  print(picfile)
+  ggsave(c2, filename = picfile, width = 11, height = 12)
 
 }
