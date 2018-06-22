@@ -119,7 +119,7 @@ run.stilt.mod <- function(namelist){
   message('Number of receptors: ', nrow(receptors))
   message('Number of parallel threads: ', n_nodes * n_cores)
 
-  if (run_foot) {
+  if (F) {
     grd <- array(dim = c((xmx - xmn) / xres, (ymx - ymn) / yres,
                          abs(n_hours) * 60))
     ram <- format(object.size(grd) * 2.0, units = 'MB', standard = 'SI')

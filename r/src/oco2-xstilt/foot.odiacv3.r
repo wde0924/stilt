@@ -15,9 +15,10 @@
 # can work with multiple receptors at a time, now, DW, 06/05/2018
 # fix footprint lat/lon to lower lefts, as Ben uses centered lat/lon
 # use raster rather than nc_open, DW, 06/19/2018
+# add plotTF for plotting XCO2 contribution maps, DW, 06/20/2018
 
 foot.odiacv3 <- function(foot.path, foot.file, emiss.file, workdir,
-  store.path = file.path(workdir, 'plot', 'foot_emiss'), txtfile){
+  store.path = file.path(workdir, 'plot', 'foot_emiss'), txtfile, plotTF = F){
 
   library(raster)
 
@@ -51,27 +52,26 @@ foot.odiacv3 <- function(foot.path, foot.file, emiss.file, workdir,
     # read in footprint
     foot.dat <- raster(file.path(foot.path, foot.file[r]))
     crs(foot.dat) <- '+proj=longlat'
-    #extent(foot.dat) <- extent(emiss.dat)
     #plot(log10(foot.dat))
 
     # NOW, foot and emiss should have the same dimension,
     # multiple them to get contribution map of CO2 enhancements
-    if (extent(emiss.dat) == extent(foot.dat)) {
-      xco2.ff.sp <- raster::overlay(x = emiss.dat, y = foot.dat,
-        fun = function(x, y){return(x * y)})    # spatial xco2.ff
-      plot(log10(xco2.ff.sp))
+    #if (extent(emiss.dat) == extent(foot.dat)) {
+    xco2.ff.sp <- raster::overlay(x = emiss.dat, y = foot.dat,
+      fun = function(x, y){return(x * y)})    # spatial xco2.ff
+    if (plotTF) plot(log10(xco2.ff.sp))
 
-    } else {
-      cat(paste('Foot and emiss grid have different domain, please check...\n'))
-      next
-      if (r == nrow(receptor)) return()
-    } # end if check domain
+    #} else {
+    #  cat(paste('Foot and emiss grid have different domain, please check...\n'))
+    #  next
+    #  if (r == nrow(receptor)) return()
+    #} # end if check domain
 
     # sum the map to get the XCO2 enhancements,
     # note that AK and PW have been incorporated in footprint
     tmp.xco2.ff <- sum(getValues(xco2.ff.sp))
     receptor$xco2.ff[r] <- tmp.xco2.ff
-    #print(tmp.xco2.ff)
+    print(tmp.xco2.ff)
 
     ### store emission * column footprint = XCO2 contribution grid into .nc file
     outname <- gsub('foot', 'foot_emiss', foot.file[r])

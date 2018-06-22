@@ -55,18 +55,25 @@ tif2nc.odiacv3 <- function(site, timestr, vname, workdir, foot.extent,
   ext <- sel.emiss@extent
   area.co2 <- area(res = res, start.lon = ext@xmin,
     start.lat = ext@ymin, end.lon = ext@xmax - res, end.lat = ext@ymax - res,
-  	third.dim = NULL) # need lower left lat/lon
+  	third.dim = NULL) # need lower left lat/lon, return dim [lon, lat]
+
+  # fix bug to reformat area --> prepare for raster, DW, 06/22/2018
+  area.co2 <- t(area.co2) # convert to [lat, lon]
+  area.lat <- rownames(area.co2)
+  area.co2 <- area.co2[length(area.lat):1, ] # flip lat, decreasing trend
 
   # convert area.co2 to raster form
   area.raster <- raster(area.co2, xmn = ext@xmin, xmx = ext@xmax,
     ymn = ext@ymin, ymx = ext@ymax, crs = crs(sel.emiss))
+  plot(area.raster)
 
   # convert the unit of CO2 emiss from Tonne Carbon/cell/month to umol/m2/s
   sel.emiss <- sel.emiss * 1E6 / 12 * 1E6 # convert tonne-C to uomol-C (= umole-CO2)
   sel.emiss <- sel.emiss / mod / 24 / 60 / 60	# convert per month to per second
   sel.emiss <- sel.emiss / area.raster		# convert per cell to per m2
   # NOW sel.co2 has unit of umole-CO2/m2/s, can be used directly with footprint
-
+  print(sel.emiss)
+  
   # store as nc
   cat('Storing contribution map as nc format...\n')
   outname <- paste0('odiac', vname, '_1kmx1km_', YYYYMM, '_', site, '.nc')
