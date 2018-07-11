@@ -85,7 +85,7 @@ run.stilt.mod <- function(namelist){
   kspl        <- 1
   kzmix       <- 1
   maxdim      <- 1
-  maxpar      <- min(10000, numpar)
+  maxpar      <- min(100000, numpar)
   mgmin       <- 2000
   ncycl       <- 0
   ndump       <- 0

@@ -81,13 +81,14 @@ recp.to.namelist <- function(namelist, plotTF){
   # whether plotting XCO2 from OCO-2
   if (plotTF) {
     xco2.obs <- data.frame(lat = as.numeric(sel.lat), lon = as.numeric(sel.lon),
-                           xco2 = as.numeric(sel.xco2))
+      xco2 = as.numeric(sel.xco2))
+
     zoom <- 8; font.size <- rel(1.0)
     col <- c('black', '#2F2C62', '#42399B', '#4A52A7', '#59AFEA', '#7BCEB8',
-            '#A7DA64','#EFF121', '#F5952D', '#E93131', '#D70131', '#D70131')
+      '#A7DA64','#EFF121', '#F5952D', '#E93131', '#D70131', '#D70131')
     col.range <- seq(380, 420, 2)
     sitemap <- get_map(location = c(lon = lon.lat[5], lat = lon.lat[6]),
-                       zoom = zoom, maptype = 'roadmap')  # plot google map
+      zoom = zoom, maptype = 'roadmap')  # plot google map
     m1 <- ggmap(sitemap) + theme_bw()
 
     # add observed XCO2
@@ -95,18 +96,18 @@ recp.to.namelist <- function(namelist, plotTF){
     c1 <- c1 + labs(x = 'LONGITUDE [degE]', y = 'LATITUDE [degN]')
     c1 <- c1 + labs(title=paste('OCO-2 XCO2 [ppm] for', site, 'on', YYYYMMDD))
     c1 <- c1 + scale_colour_gradientn(name = 'OCO-2 XCO2 [ppm]', colours = col,
-                                      breaks = col.range, labels = col.range)
+      breaks = col.range, labels = col.range)
+
     # add themes
     c2 <- c1 + theme(legend.position = 'bottom',
-                     legend.text = element_text(size = font.size),
-                     legend.key = element_blank(),
-                     legend.key.height = unit(0.5, 'cm'),
-                     legend.key.width = unit(3, 'cm'),
-                     axis.title.y = element_text(size = font.size, angle = 90),
-                     axis.title.x = element_text(size = font.size, angle = 0),
-                     axis.text = element_text(size = font.size),
-                     axis.ticks = element_line(size = font.size),
-                     title = element_text(size = font.size))
+      legend.text = element_text(size = font.size),
+      legend.key = element_blank(), legend.key.height = unit(0.5, 'cm'),
+      legend.key.width = unit(3, 'cm'),
+      axis.title.y = element_text(size = font.size, angle = 90),
+      axis.title.x = element_text(size = font.size, angle = 0),
+      axis.text = element_text(size = font.size),
+      axis.ticks = element_line(size = font.size),
+      title = element_text(size = font.size))
     picname <- paste0('ggmap_xco2_', site,'_', YYYYMMDD, '.png')
     ggsave(c2, filename = picname, width = 6, height = 6)
   }  # end if plotTF
@@ -122,8 +123,7 @@ recp.to.namelist <- function(namelist, plotTF){
 
   # change to Ben's definitions,  see validate_varsiwant()
   namelist$varstrajec <- c('time', 'indx', 'lati', 'long', 'zagl', 'zsfc',
-                           'foot', 'samt', 'dmas', 'mlht', 'pres', 'sigw',
-                           'tlgr', 'dens')
+    'foot', 'samt', 'dmas', 'mlht', 'pres', 'sigw', 'tlgr', 'dens')
 
   # select lat, lon based on OCO-2 soundings and data quality
   if(namelist$selTF){
@@ -151,19 +151,22 @@ recp.to.namelist <- function(namelist, plotTF){
   # grab simulation timing, yyyy-mm-dd HH:MM:SS (UTC), aka 'receptors' info
   # from namelist
   run_times_utc <- paste0(recp.yr + 2000, '-',
-                          formatC(recp.mon, width=2, flag=0), '-',
-                          formatC(recp.day, width=2, flag=0), ' ',
-                          formatC(recp.hr,  width=2, flag=0), ':',
-                          formatC(recp.min, width=2, flag=0), ':',
-                          formatC(recp.sec, width=2, flag=0))
+    formatC(recp.mon, width = 2, flag = 0), '-',
+    formatC(recp.day, width = 2, flag = 0), ' ',
+    formatC(recp.hr, width = 2, flag = 0), ':',
+    formatC(recp.min, width = 2, flag = 0), ':',
+    formatC(recp.sec, width = 2, flag = 0))
 
   # Expand the run times, latitudes, and longitudes to form the unique receptors
   # that are used for each simulation and match Ben's code
   recp.info <- data.frame(run_time = run_times_utc, lati = recp.lat,
-                          long = recp.lon, stringsAsFactors = F)
+    long = recp.lon, stringsAsFactors = F)
 
   # subset receptor data frame, if needed
   if (!is.null(namelist$recp.num)) recp.info <- recp.info[1:namelist$recp.num, ]
+  if (!is.null(namelist$find.lat)){
+    recp.info <- recp.info[findInterval(namelist$find.lat, recp.info$lat), ]
+  }
 
   recp.info$zagl <- namelist$agl
   namelist$recp.info <- recp.info

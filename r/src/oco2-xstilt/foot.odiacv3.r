@@ -36,8 +36,9 @@ foot.odiacv3 <- function(foot.path, foot.file, emiss.file, workdir,
 
   # from foot.file, get receptor info
   receptor <- unlist(strsplit(gsub('_X_foot.nc', '', foot.file), "_"))
-  receptor <- data.frame(matrix(receptor, byrow = T, ncol = 3),
-    stringsAsFactors = F)
+  receptor <- as.data.frame(matrix(receptor, byrow = T, ncol = 3),
+    stringsAsFactors = F) %>% mutate_all(funs(as.numeric), colnames(receptor))
+    # mutate_all() convert character to numberic
   colnames(receptor) <- list('timestr', 'lon', 'lat')
 
   order.index <- order(receptor$lat)
@@ -86,5 +87,5 @@ foot.odiacv3 <- function(foot.path, foot.file, emiss.file, workdir,
   # finally, write in a txt file
   write.table(x = receptor, file = txtfile, sep = ',', row.names = F, quote = F)
 
-  return(receptor$xco2.ff)
+  return(receptor)
 } # end of subroutine

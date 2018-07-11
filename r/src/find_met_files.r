@@ -17,21 +17,21 @@
 
 find_met_files <- function(t_start, met_file_format, n_hours, met_loc) {
   require(dplyr)
-  
-  request <- as.POSIXct(t_start, tz='UTC') %>%
+
+  request <- as.POSIXct(t_start, tz = 'UTC') %>%
     c(. + c(n_hours, n_hours - 5) * 3600) %>%
     range() %>%
     (function(x) seq(x[1], x[2], by = 'hour')) %>%
     strftime(tz = 'UTC', format = met_file_format)
-  
+
   available <- dir(met_loc, full.names = T)
-  
+
   idx <- do.call(c, lapply(request, function(pattern) {
     grep(pattern = pattern, x = available)
   }))
-  
+
   if (any(idx < 1))
     return()
-  
+
   unique(available[idx])
 }

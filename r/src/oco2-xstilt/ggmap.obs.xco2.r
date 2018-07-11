@@ -1,7 +1,8 @@
 # script to plot observed XCO2 on map, DW
+# add section to plot observed XCO2 with quality flag on latitude series, 07/03/2018
 
 ggmap.obs.xco2 <- function(site, timestr, oco2.path, lon.lat, workdir,
-  plotdir = file.path(workdir, 'plot')){
+  plotdir = file.path(workdir, 'plot'), zoom = 8){
 
   library(ggmap); library(ggplot2)
 
@@ -15,7 +16,6 @@ ggmap.obs.xco2 <- function(site, timestr, oco2.path, lon.lat, workdir,
   oco2.lon <- ncvar_get(oco2.dat, "longitude")
   xco2.obs <- ncvar_get(oco2.dat, "xco2")
   xco2.obs[xco2.obs == -999999] <- NA
-
   xco2.obs.uncert <- ncvar_get(oco2.dat, "xco2_uncertainty")
 
   wl <- ncvar_get(oco2.dat, "warn_level")
@@ -51,17 +51,19 @@ ggmap.obs.xco2 <- function(site, timestr, oco2.path, lon.lat, workdir,
   # plot center
   obs.lat <- lon.lat[6]
   obs.lon <- lon.lat[5]
-  zoom <- 8; alpha <- 1; font.size <- rel(1.2)
+  alpha <- 1; font.size <- rel(1.2)
   col <- c('black', '#2F2C62', '#42399B', '#4A52A7', '#59AFEA', '#7BCEB8',
           '#A7DA64','#EFF121', '#F5952D', '#E93131', '#D70131', '#D70131')
 
   # plot google map
   sitemap <- get_map(location = c(lon = obs.lon, lat = obs.lat), zoom = zoom,
-                     maptype = 'roadmap')
+    maptype = 'roadmap')
   m1 <- ggmap(sitemap) + theme_bw()
   c1 <- m1 + geom_point(data = obs.all, aes(lon, lat, colour = xco2)) +
     scale_colour_gradientn(name = 'OCO-2 XCO2 [ppm]', colours = col,
-                           breaks = seq(380,420,2), labels = seq(380,420,2)) +
+      limits = c(max(390, min(obs.all$xco2, na.rm = T)),
+        max(obs.all$xco2, na.rm = T)), breaks = seq(380, 420, 2),
+      labels = seq(380, 420, 2)) +
     labs(x = 'Longitude', y = 'Latitude') +
     labs(title = paste('OCO-2 XCO2 [ppm] for', site, 'on', timestr))
 
@@ -82,9 +84,19 @@ ggmap.obs.xco2 <- function(site, timestr, oco2.path, lon.lat, workdir,
     axis.ticks = element_line(size = font.size),
     title = element_text(size = font.size))
 
+  # plot on latitude-series
+  l1 <- ggplot() + theme_bw() +
+    geom_point(data = obs.all, aes(lat, xco2), colour = 'gray70', shape = 17,
+      size = 3) +
+    geom_point(data = obs.all[obs.all$qf == 0, ], aes(lat, xco2), size = 3,
+      colour = 'black', shape = 17)
+
+  # merge map and latseries
+  library(ggpubr)
+  merge.plot <- ggarrange(plotlist = list(c2, l1), nrow = 2, heights = c(2, 1))
+
   picname <- paste0('ggmap_xco2_', site, '_', timestr, '.png')
   picfile <- file.path(plotdir, picname)
   print(picfile)
-  ggsave(c2, filename = picfile, width = 11, height = 12)
-
+  ggsave(merge.plot, filename = picfile, width = 11, height = 15)
 }
