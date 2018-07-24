@@ -85,7 +85,7 @@ wgt.trajec.footv3 <- function(output, oco2.info, ak.wgt = T, pwf.wgt = T){
 	wgt.output <- output
 	wgt.output$particle <- newtraj # overwrite with weighted trajec
 	wgt.output$wgt.prof <- combine.prof  # add interpolated AK, PW profiles
-	wgt.output$file <- gsub("traj", "wgttraj", output$file)
+	wgt.output$file <- gsub("X_traj.rds", "X_wgttraj.rds", output$file)
   saveRDS(wgt.output, wgt.output$file)
 
 	# return both weighting profiles and weighted trajec

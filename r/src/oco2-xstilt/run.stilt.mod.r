@@ -18,6 +18,7 @@ run.stilt.mod <- function(namelist){
   ak.wgt    <- namelist$ak.wgt     # whether weighted foot by averaging kernel
   pwf.wgt   <- namelist$pwf.wgt    # whether weighted foot by pres weighting
   oco2.path <- namelist$oco2.path
+  stilt.ver <- namelist$stilt.ver
 
   # Model control
   rm_dat     <- T
@@ -197,11 +198,12 @@ run.stilt.mod <- function(namelist){
                         run_foot = run_foot, run_trajec = run_trajec,
                         siguverr = siguverr, sigzierr = sigzierr,
                         smooth_factor = smooth_factor, splitf = splitf,
-                        stilt_wd = stilt_wd, time_integrate = time_integrate,
-                        timeout = timeout, tkerd = tkerd, tkern = tkern,
-                        tlfrac = tlfrac, tluverr = tluverr, tlzierr = tlzierr,
-                        tratio = tratio, tvmix = tvmix, varsiwant = varsiwant,
-                        veght = veght, vscale = vscale, w_option = w_option,
+                        stilt_wd = stilt_wd, stilt.ver = stilt.ver,
+                        time_integrate = time_integrate, timeout = timeout,
+                        tkerd = tkerd, tkern = tkern, tlfrac = tlfrac,
+                        tluverr = tluverr, tlzierr = tlzierr, tratio = tratio,
+                        tvmix = tvmix, varsiwant = varsiwant, veght = veght,
+                        vscale = vscale, w_option = w_option,
                         xmn = xmn, xmx = xmx, xres = xres, ymn = ymn, ymx = ymx,
                         yres = yres, zicontroltf = zicontroltf, z_top = z_top,
                         zcoruverr = zcoruverr)

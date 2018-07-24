@@ -13,6 +13,7 @@
 # extra functions including 'get.oco2.info()', 'get.ground.hgt()',
 #                           'get.wgt.funcv3()', 'wgt.trajec.footv3()'
 # add 'run_foot', if false, then no need to run footprint. DW, 06/04/2018
+# add Trajecfoot() too, DW, 07/17/2018
 
 # for debug --
 if(F){
@@ -39,9 +40,10 @@ simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
                             qcycle = 0, r_run_time, r_lati, r_long, r_zagl,
                             random = 1, run_foot = T, run_trajec = T,
                             siguverr = NA, sigzierr = NA, smooth_factor = 1,
-                            splitf = 1, time_integrate = F, timeout = 3600,
-                            tkerd = 0.18, tkern = 0.18, tlfrac = 0.1,
-                            tluverr = NA, tlzierr = NA, tratio = 0.9, tvmix = 1,
+                            splitf = 1, stilt.ver = 2, time_integrate = F,
+                            timeout = 3600, tkerd = 0.18, tkern = 0.18,
+                            tlfrac = 0.1, tluverr = NA, tlzierr = NA,
+                            tratio = 0.9, tvmix = 1,
                             varsiwant = NULL, veght = 0.5, vscale = 200,
                             w_option = 0, xmn = -180, xmx = 180, xres = 0.1,
                             ymn = -90, ymx = 90, yres = xres, zicontroltf = 0,
@@ -215,11 +217,13 @@ simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
     # Weight footprint: call wgt.trajec.footv3() to weight trajec-level
     # footprint, added by Dien Wu, 06/01/2018
     if (length(r_zagl) > 1) {
-      # check whether weighted trajec exists already
-      wgtfile <- gsub('_traj.rds', '_wgttraj.rds', output$file)
+      # check whether weighted trajec exists already,
+      # directly grab from by-id directory, DW, 07/13/2018
+      wgt.file <- file.path(rundir,
+        list.files(path = rundir, pattern = '_wgttraj.rds'))
 
-      if (file.exists(wgtfile)) {
-        wgt.output <- readRDS(wgtfile)
+      if (length(wgt.file) > 0) {
+        wgt.output <- readRDS(wgt.file)
 
       } else {
         # get OCO-2 profile first according to lat/lon of receptor, return a list
@@ -245,23 +249,57 @@ simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
 
     # add run_foot for whether to generate footprint
     if (run_foot) {
-      # Calculate near-field dilution height based on gaussian plume width
-      # approximation and recalculate footprint sensitivity for cases when the
-      # plume height is less than the PBL height scaled by veght
-      if (hnf_plume)
-        particle <- calc_plume_dilution(particle, numpar, r_zagl, veght)
 
-      # Produce footprint --------------------------------------------------------
-      # Aggregate the particle trajectory into surface influence footprints. This
-      # outputs a .rds file, which can be read with readRDS() containing the
-      # resultant footprint and various attributes
-      foot_file <- file.path(rundir, paste0(basename(rundir), '_foot.nc'))
-      foot <- calc_footprint(particle, output = foot_file,
-                             r_run_time = r_run_time,
-                             smooth_factor = smooth_factor,
-                             time_integrate = time_integrate,
-                             xmn = xmn, xmx = xmx, xres = xres,
-                             ymn = ymn, ymx = ymx, yres = yres)
+      ### ------- add Trajecfoot() if stilt.ver = 1, DW, 07/17/2018 -------- ##
+      if (stilt.ver == 1) {
+
+        foot_file <- file.path(rundir, paste0(basename(rundir), '_foot.nc'))
+        # reform particle to match Trajecfoot
+        ensemble <- particle %>%
+          dplyr::select(time = time, lat = lati, lon = long, agl = zagl,
+                        zi = zsfc, foot = foot, index = indx, dmass = dmas) %>%
+          as.matrix()
+
+        foottimes <- c(0, abs(n_hours))
+        foot <- Trajecfoot(ident = NULL, part = ensemble, foottimes = foottimes,
+                           dmassTF = dmassTF, lon.ll = xmn, lat.ll = ymn,
+                           lon.res = xres, lat.res = yres,
+                           numpix.x = (xmx - xmn) / xres,
+                           numpix.y = (ymx - ymn) / yres) # [lat, lon]
+
+        # change dims to [lon, lat] for write_footprint()
+        foot <- aperm(foot, c(2, 1, 3))
+
+        # Set footprint grid
+        glong <- head(seq(xmn, xmx, by = xres), -1)
+        glati <- head(seq(ymn, ymx, by = yres), -1)
+
+        # Set footprint metadata and write to file
+        write_footprint(foot, output = foot_file, glong = glong,
+                        glati = glati, projection = '+proj=longlat',
+                        xres = xres, yres = yres,
+                        time_out = as.numeric(as.POSIXct(r_run_time, tz = "UTC")))
+      } else {
+
+        # Calculate near-field dilution height based on gaussian plume width
+        # approximation and recalculate footprint sensitivity for cases when the
+        # plume height is less than the PBL height scaled by veght
+        if (hnf_plume)
+          particle <- calc_plume_dilution(particle, numpar, r_zagl, veght)
+
+        # Produce footprint --------------------------------------------------------
+        # Aggregate the particle trajectory into surface influence footprints. This
+        # outputs a .rds file, which can be read with readRDS() containing the
+        # resultant footprint and various attributes
+        foot_file <- file.path(rundir, paste0(basename(rundir), '_foot.nc'))
+        foot <- calc_footprint(particle, output = foot_file,
+                               r_run_time = r_run_time,
+                               smooth_factor = smooth_factor,
+                               time_integrate = time_integrate,
+                               xmn = xmn, xmx = xmx, xres = xres,
+                               ymn = ymn, ymx = ymx, yres = yres)
+      }  # end of stilt.ver
+      ### --- End of adding Trajecfoot() if stilt.ver = 1, DW, 07/17/2018 --- ##
 
       if (is.null(foot)) {
         warning('No non-zero footprint values found within the footprint domain.')

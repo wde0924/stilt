@@ -2,60 +2,78 @@
 # add footprint map, 06/12/2017
 
 homedir <- '/uufs/chpc.utah.edu/common/home'
-workdir <- file.path(homedir, 'lin-group5/wde/github/stilt')
-plotdir <- file.path(workdir, 'plot')
-source(file.path(workdir, 'r/dependencies.r'))
+plotdir <- file.path(homedir, 'lin-group5/wde/github/plot')
+source('r/dependencies.r')
 
 ####
-cpTF <- F  # whether copy files
-indx <- 1
-site <- c(
-  'Riyadh', 'Medina',  'Mecca', 'Cairo',   'Jerusalem',    # 1-5
-  'PRD',    'Beijing', 'Xian',  'Lanzhou', 'Mumbai',       # 6-10
-  'Indy',   'Phoenix', 'SLC',   'Denver',  'LA',           # 11-15
-  'Seattle' )[indx]                                        # 16-more
-
-stilt.ver <- 2  # for STILT version
-nhrs.back <- c(-24, -36, -48, -72)[4]  # hours back for trajec
-dpar      <- c(10, 50, 100)[3]  # number of particles per level
+site <- 'Riyadh'
+met  <- c('1km', 'gdas', 'gdas0p5')[3]
 oco2.ver  <- c('b7rb', 'b8r')[1]  # for oco2 version
-met       <- c('1km', 'gdas', 'gdas0p5')[3]
-oco2.path <- file.path(homedir, 'lin-group5', 'wde', 'input_data', 'OCO-2', 'L2',
+oco2.path <- file.path(homedir, 'lin-group5/wde/input_data', 'OCO-2/L2',
   paste0('OCO2_lite_', oco2.ver))
 
 # lon.lat: minlon, maxlon, minlat, maxlat, city.lon, city.lat
-site.info <- get.site.track(site, oco2.ver, oco2.path, workdir, searchTF = F,
-  date.range = c('20140901', '20171231'), thred.per.count = 200, lon.lat = NULL,
-  urbanTF = T, dlon = 0.5, dlat = 0.5)
+output.path <-file.path(homedir, 'lin-group5/wde/github/result')
+txtpath <- file.path(output.path, 'oco2_overpass')
+
+site.info <- get.site.track(site, oco2.ver, oco2.path, searchTF = F,
+  date.range = c('20140901', '20171231'), thred.count.per.deg = 200,
+  lon.lat = get.lon.lat(site), urbanTF = T, dlon.urban = 0.5, dlat.urban = 0.5,
+  thred.count.per.deg.urban = 100, txtpath = txtpath)
 
 lon.lat <- site.info$lon.lat
-oco2.track <- site.info$oco2.track %>% filter(tot.urban.count > 100)
+oco2.track  <- site.info$oco2.track %>% filter(tot.urban.count > 200 &
+  qf.urban.count > 80)
 all.timestr <- oco2.track$timestr
+print(all.timestr)
 
 ### select which overpass to work with
-tt  <- 4
+tt <- 3
 timestr <- all.timestr[tt]
 cat(paste('Working on:', timestr, 'for city/region:', site, '...\n'))
 
-### grab footprints info
-### for STILT-R v2:
+### grab footprints info, for STILT-R v2:
 # always copy trajec and footprints to another directory
 # if cpTF == T, copy all files from out to plot directory
 # if not, simply return the paths
-#foot.path <- cp.xfiles(workdir, v = 1, nhrs.back, dpar, site, cpTF)
-#traj.path <- cp.xfiles(workdir, v = 2, nhrs.back, dpar, site, cpTF)
-#wgttraj.path <- cp.xfiles(workdir, v = 3, nhrs.back, dpar, site, cpTF)
+#cpTF <- F  # whether copy files
+#foot.path <- cp.xfiles(workdir, v = 1, nhrs, dpar, site, cpTF)
+#traj.path <- cp.xfiles(workdir, v = 2, nhrs, dpar, site, cpTF)
+#wgttraj.path <- cp.xfiles(workdir, v = 3, nhrs, dpar, site, cpTF)
 
-# read all file names
-foot.path <- file.path(homedir, '/lin-group4/wde/STILT_output/OCO-2',
-  'Footprints', site, timestr)
-foot.file <- list.files(path = foot.path, pattern = as.character(timestr))
+### read footprint files
+nhrs <- c(-12, -24, -36, -48, -72)[1]  # hours back for trajec
+dpar <- c(10, 50, 100, 2500)[3]  # number of particles per level
+foot.str <- c('sf0', 'sf1', 'sf2', 'trajecfoot', 'trajecfoot_dmassF')[5]
+
+stilt.ver <- 1  # for STILT version
+dmassTF <- F
+#if (foot.str == 'trajecfoot') stilt.ver <- 1  # for STILT version
+
+if (dpar == 2500) {
+  workdir <- file.path(homedir, 'lin-group5/wde/github/cp_test')
+  foot.path <- file.path(workdir, paste0('out_', timestr, '_', dpar, 'dpar'),
+    'by-id')
+  foot.file <- file.path(foot.path,
+    list.files(path = foot.path, pattern = 'foot.nc', recursive = T))
+  foot.path <- dirname(foot.file)
+  foot.file <- basename(foot.file)
+
+} else {
+  workdir <- file.path(homedir, 'lin-group5/wde/github/cp_trajecfoot')
+  foot.path <- file.path(workdir, 'out', paste0('footprints_', foot.str))
+  #foot.path <- file.path(workdir, paste0('out_', timestr, '_', dpar, 'dpar'),
+  #  paste0('footprints_', foot.str))
+  foot.file <- list.files(path = foot.path, pattern = 'foot.nc')
+}
+
 foot.name <- gsub('_X_foot.nc', '', foot.file)
 recp.info <- data.frame(matrix(unlist(strsplit(foot.name, '_')), byrow = T,
   ncol = 3), stringsAsFactors = F)
 colnames(recp.info) <- c('timestr', 'recp.lon', 'recp.lat')
 
-# order as lat increased
+# order by increasing lat
+foot.file <- file.path(foot.path, foot.file)
 order.index <- order(recp.info$recp.lat)
 recp.info <- recp.info[order.index, ]
 foot.file <- foot.file[order.index]
@@ -65,37 +83,84 @@ uni.timestr <- unique(recp.info$timestr)
 print(uni.timestr)
 
 # select receptors to plot
-#find.lat <- seq(33, 34, 0.2)
-if (site == 'Riyadh') find.lat <- c(seq(24, 26, 0.3), 24.5444+0.01)
+#if (site == 'Riyadh' & tt == ) find.lat <- seq(23.4, 24.7, 0.15)
+if (site == 'Riyadh' & tt == 3) find.lat <- seq(24.3, 25.0, 0.1)
+#if (site == 'Riyadh') find.lat <- seq(25, 26, 0.15)
+if (site == 'Baghdad') find.lat <- seq(32, 34, 0.2)
+
 sel <- findInterval(find.lat, recp.lat)
-sel.lat <- recp.lat[sel]
-sel.lon <- recp.lon[sel]
+sel.lat <- recp.lat[sel]; sel.lon <- recp.lon[sel]
+
 sel.foot.file <- foot.file[sel]
+print(basename(sel.foot.file))
 
 ## looping over track times
-foot.sig   <- 1E-10
-melt.foot  <- NULL; foot.count <- NULL
+foot.sig   <- 1E-6
+foot.all  <- NULL; foot.count <- NULL
 
-for (s in 1:length(sel)) {
-
+for (s in 1:length(sel.foot.file)) {
+#s = 3
   cat('Working on latitude', sel.lat[s], 'N...\n')
-  #foot.dat <- nc_open(file.path(foot.path, sel.foot.file[s]))
-  tmp.foot <- raster(file.path(foot.path, ))
-  melt.foot <- grab.foot(stilt.ver = stilt.ver, footpath = footpath,
-    footfile = sel.foot.file[s], foot.sig = foot.sig)
+  source('r/dependencies.r')
+  melt.foot <- grab.foot(stilt.ver = 2, footfile = sel.foot.file[s],
+    foot.sig = foot.sig, lon.lat = NULL)
+
+  # compare two foots
+  if (F) {
+    if (foot.str == 'sf0' & dpar == 2500) foot.bf <- melt.foot
+    if (foot.str == 'trajecfoot' & dpar == 100) foot.tf <- melt.foot
+
+    # calculate the diff
+    library(tidyr)
+    merge.foot <- full_join(foot.bf, foot.tf, by = c('lon', 'lat')) %>%
+      dplyr::select('lon' = 'lon', 'lat' = 'lat', 'bf' = 'foot.x',
+        'tf' = 'foot.y') %>% replace_na(list(bf = 0, tf = 0)) %>%
+      mutate(foot = tf - bf)
+    merge.foot$fac <- sel.lat[s]
+
+    picname <- file.path(plotdir, 'xfoot',
+      paste0('diff_xfoot_', site, '_', uni.timestr, '_', met, '_STILTv2_zoom',
+        zoom, '_', nhrs, 'hrs_', dpar, 'dpar_', foot.str, '.png'))
+
+    d1 <- ggmap.xfoot.obs(mm = mm, lon.lat = lon.lat, site = site,
+        oco2.path = oco2.path, facet.nrow = 1, facet.ncol = 1, nhrs = nhrs,
+        dpar = dpar, stilt.ver = 'diff', foot.str = 'diff.foot', timestr = timestr,
+        font.size = rel(0.7), recp.lon = sel.lon[s], recp.lat = sel.lat[s],
+        foot = merge.foot, picname = picname, storeTF = T, width = 6, height = 6)
+  }
 
   # storing
-  melt.foot <- rbind(melt.foot, melt.tmp.foot)
-  foot.count<- c(foot.count, nrow(melt.tmp.foot))
+  foot.all <- rbind(foot.all, melt.foot)
+  foot.count<- c(foot.count, nrow(melt.foot))
 } # end for s
 
-sel.foot <- melt.foot %>% mutate(fac = rep(sel.lat, foot.count)) #%>%
-  #filter(lat >= lon.lat[3] & lat <= lon.lat[4] &
-  #  lon >= lon.lat[1] & lon <= lon.lat[2])
+sel.foot <- foot.all %>% mutate(fac = rep(sel.lat, foot.count))
+
+
+#### plot footprint
+if (met == '1km') met <- 'wrf'
+
+# load google map
+zoom <- 8
+mm <- ggplot.map(map = 'ggmap', center.lat = lon.lat[6],
+  center.lon = lon.lat[5] + 0.1, zoom = zoom)
+
+source('r/dependencies.r')
+picname <- file.path(plotdir, 'xfoot',
+  paste0('xfoot_', site, '_', uni.timestr, '_', met, '_STILTv', stilt.ver,
+    '_zoom', zoom, '_', nhrs, 'hrs_', dpar, 'dpar_', foot.str, '.png'))
+
+pp1 <- ggmap.xfoot.obs(mm = mm, lon.lat = lon.lat, site = site,
+  oco2.path = oco2.path, facet.nrow = 3, facet.ncol = 4, nhrs = nhrs,
+  dpar = dpar, stilt.ver = 2, foot.str = foot.str, timestr = timestr,
+  font.size = rel(1.2), recp.lon = sel.lon, recp.lat = sel.lat,
+  foot = sel.foot, picname = picname, storeTF = T, width = 14, height = 8)
+
+
 
 
 ### for original STILT
-v1TF <- T
+v1TF <- F
 if (v1TF) {
   foot.path <- paste0(homedir, '/lin-group4/wde/STILT_output/OCO-2/NetCDF/',
     site, '/', met, '/multi_agl/akpw_intfoot/', timestr, '/')
@@ -144,39 +209,17 @@ if (v1TF) {
   # fix lat lon from lower left to center lat lon
   sel.foot1$lat <- sel.foot1$lat + 1/240
   sel.foot1$lon <- sel.foot1$lon + 1/240
-}
 
+  picname <- file.path(plotdir, paste0('xfoot_', site, '_', uni.timestr, '_', met,
+    '_STILTv1_zoom', zoom, '_', nhrs, 'hrs_', dpar, 'dpar.png'))
+  pp2 <- ggmap.xfoot.obs(mm, lon.lat, site, facet.nrow, nhrs, dpar,
+    stilt.ver = 1, timestr, font.size = rel(0.9), recp.lon = sel.lon,
+    recp.lat = sel.lat, obs = obs, foot = sel.foot1[sel.foot1$fac == sel.lat[8],],
+    picname, storeTF = T, width = 9, height = 10)
 
-#### plot footprint
-if (met == '1km') met <- 'wrf'
-facet.nrow <- 2
-zoom <- 10
+  ### subtract near-field influence from X-STILT v1
+  # it should include contribution from both faraway sources and beyond 1 day
 
-# load google map
-mm <- ggplot.map(map = 'ggmap', center.lat = lon.lat[6],
-  center.lon = lon.lat[5] + 0.1, zoom = zoom)
-
-source(file.path(workdir, 'r/dependencies.r'))
-picname <- file.path(plotdir, paste0('xfoot_', site, '_', uni.timestr, '_', met,
-  '_STILTv2_zoom', zoom, '_', nhrs.back, 'hrs_', dpar, 'dpar.png'))
-pp1 <- ggmap.xfoot.obs(mm, lon.lat, site, facet.nrow, nhrs.back, dpar,
-  stilt.ver = 2, timestr, font.size = rel(0.9), recp.lon = sel.lon,
-  recp.lat = sel.lat, obs = obs, foot = sel.foot[sel.foot$fac == sel.lat[8],],
-  picname, storeTF = T, width = 9, height = 10)
-
-
-picname <- file.path(plotdir, paste0('xfoot_', site, '_', uni.timestr, '_', met,
-  '_STILTv1_zoom', zoom, '_', nhrs.back, 'hrs_', dpar, 'dpar.png'))
-pp2 <- ggmap.xfoot.obs(mm, lon.lat, site, facet.nrow, nhrs.back, dpar,
-  stilt.ver = 1, timestr, font.size = rel(0.9), recp.lon = sel.lon,
-  recp.lat = sel.lat, obs = obs, foot = sel.foot1[sel.foot1$fac == sel.lat[8],],
-  picname, storeTF = T, width = 9, height = 10)
-
-
-
-### subtract near-field influence from X-STILT v1
-# it should include contribution from both faraway sources and beyond 1 day
-if (v1TF) {
   #for (f in 1:length(sel.lat)) {
     f = 8
     # convert version 2 to raster
@@ -244,19 +287,21 @@ if (v1TF) {
 
     source(file.path(workdir, 'r/dependencies.r'))
     pp3 <- ggmap.xfoot.obs(mm, lon.lat, site, facet.nrow,
-      nhrs.back = '72 vs. 72', dpar, stilt.ver = 'v1 vs. v2', timestr,
+      nhrs = '72 vs. 72', dpar, stilt.ver = 'v1 vs. v2', timestr,
       font.size = rel(0.9), recp.lon = sel.lon, recp.lat = sel.lat, obs = obs,
       foot = total.diff.foot.df, picname2, storeTF = T, width = 10, height = 11)
 
     print(sel.lat[f])
 
-  #}
-}
+  #} # end for
 
-# merge all maps
-library(ggpubr)
-mg <- ggarrange(plotlist = list(pp1, pp2, pp3), nrow = 2, ncol = 2)
-ggsave(mg, filename = paste0('xfoot_merge_', site, '_', uni.timestr,'_zoom',
-  zoom, '.png'), width = 20, height = 22)
+  # merge all maps
+  library(ggpubr)
+  mg <- ggarrange(plotlist = list(pp1, pp2, pp3), nrow = 2, ncol = 2)
+  ggsave(mg, filename = paste0('xfoot_merge_', site, '_', uni.timestr,'_zoom',
+    zoom, '.png'), width = 20, height = 22)
+
+} # end if v1TF
+
 
 # end of script

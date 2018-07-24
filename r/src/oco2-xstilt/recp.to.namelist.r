@@ -161,12 +161,14 @@ recp.to.namelist <- function(namelist, plotTF){
   # that are used for each simulation and match Ben's code
   recp.info <- data.frame(run_time = run_times_utc, lati = recp.lat,
     long = recp.lon, stringsAsFactors = F)
+  recp.info <- recp.info[order(recp.info$lati), ]
 
   # subset receptor data frame, if needed
-  if (!is.null(namelist$recp.num)) recp.info <- recp.info[1:namelist$recp.num, ]
-  if (!is.null(namelist$find.lat)){
-    recp.info <- recp.info[findInterval(namelist$find.lat, recp.info$lat), ]
-  }
+  if (!is.null(namelist$recp.num))
+    recp.info <- recp.info[min(namelist$recp.num):max(namelist$recp.num), ]
+
+  if (!is.null(namelist$find.lat))
+    recp.info <- recp.info[findInterval(namelist$find.lat, recp.info$lati), ]
 
   recp.info$zagl <- namelist$agl
   namelist$recp.info <- recp.info
