@@ -6,120 +6,124 @@
 # fix 2, remove fix1, 04/20/2017, DW, not to weight background CO2 for now
 # generalizt to merge with Ben's code, DW, 07/23/2018
 # read bio fluxes as raster layer that is more efficient, DW, 07/23/2018
+# weight endpts with AK, DW, 07/23/2018
 
-
-endpts.trajfoot <- function(trajdat, ident=NULL){
-
-  library(ncdf4)
-  ct.version<-"2016-1"
-  if(substr(ident,1,10)>="2016x01x01")ct.version<-"2017"
-  ctpath<-paste("/uufs/chpc.utah.edu/common/home/lin-group1/group_data/CT-NRT_v",ct.version,"/molefractions/co2_total/",sep="")
+endpts.trajfoot <- function(trajdat, ctmole.path, combine.prof){
 
   #### NOW grab a CO2.bio fluxes for each selected trajec ###
   # match 3-houly footprint and 3-houly biosperhic fluxes
   # first locate the date and hour for each backwards hours of STILT footprint
-  recp.yr<-as.numeric(substr(ident,1,4));recp.mon<-as.numeric(substr(ident,6,7));recp.day<-as.numeric(substr(ident,9,10))
-  recp.hr<-substr(ident,12,13)
-  if(substr(recp.hr,1,1)=="x"){recp.hr<-10}else{recp.hr<-as.numeric(recp.hr)}
-  endpoint.min<-tapply(trajdat[,"time"],trajdat[,"index"],min)  # in mins
+  recp.date <- as.POSIXlt(as.character(timestr), format = '%Y%m%d%H', tz = 'UTC')
+  edp.time <- tapply(trajdat$time, trajdat$indx, min)  # in mins
 
   # NOW, grab the endtraj for those min.time, using STRING MATCHING METHOD
-  traj.time.index<-paste(trajdat[,"time"], trajdat[,"index"])
-  end.time.index<-paste(endpoint.min, attributes(endpoint.min)$dimnames[[1]])
-  row.index<-match(end.time.index,traj.time.index)	# which returns row number for each index
-  endtraj<-trajdat[row.index,]	# finally grab the endpoints
-
-  # open all three-day-back CT-NRT files
-  # use weekdayhr() to return the acutal date, weekdayhr<-function(yr,mon,day,hr,runtt,diffGMT=NA)
-  endtraj.time<-weekdayhr(recp.yr, recp.mon, recp.day, recp.hr, runtt=endtraj[,"time"])
-  traj.hh<-endtraj.time[,"hr"]
-  traj.dd<-paste(endtraj.time[,"yr"],formatC(endtraj.time[,"mon"],width=2,flag=0),formatC(endtraj.time[,"day"],width=2,flag=0),sep="")
-  uni.day<-sort(unique(traj.dd))  # increasing trend
+  endtraj <- trajdat %>% group_by(indx) %>% filter(time == min(time)) %>%
+    mutate(date = recp.date + time * 60, timestr = substr(date, 1, 10),
+      yr  = as.numeric(substr(date, 1, 4)),
+      mon = as.numeric(substr(date, 6, 7)),
+      day = as.numeric(substr(date, 9, 10)),
+      hr  = as.numeric(substr(date, 12, 13))
+    ) %>% ungroup()
+  uni.date <- unique(endtraj$timestr)
 
   # grab CT-NRT files for all backwards hours, and then put in a 3D fluxes array
-  ctfile<-paste(ctpath, "CT-NRT.v",ct.version,".molefrac_glb3x2_", substr(uni.day,1,4), "-", substr(uni.day,5,6), "-", substr(uni.day,7,8), ".nc", sep="")
-  tmp<-nc_open(ctfile[1])  # for fluxes
+  tmp <- nc_open(file.path(ctmole.path, list.files(ctmole.path, uni.date[1])))
 
   # grab variables
-  ct.lat<-ncvar_get(tmp, "latitude")-1
-  ct.lon<-ncvar_get(tmp, "longitude")-1.5
-  ct.time<-ncvar_get(tmp,"time_components")	# UTC time components
-  ct.level<-ncvar_get(tmp, "level")	# 25 levels
-  ct.pres<-ncvar_get(tmp, "pressure")/100 # 26 boundaries for pressure
-  ct.bound<-ncvar_get(tmp,"boundary")	# 26 boundaries
-  rownames(ct.time)<-c("year", "month", "day", "hour", "minute", "second")
-  ct.hh<-ct.time["hour",]-1 # every 3 hours
+  ct.lat   <- ncvar_get(tmp, 'latitude') - 1
+  ct.lon   <- ncvar_get(tmp, 'longitude') - 1.5
+  ct.time  <- ncvar_get(tmp, 'time_components')	# UTC time components
+  ct.level <- ncvar_get(tmp, 'level')	          # 25 levels
+  ct.pres  <- ncvar_get(tmp, 'pressure')/100    # 26 boundaries for pressure
+  ct.bound <- ncvar_get(tmp, 'boundary')	      # 26 boundaries
+  rownames(ct.time) <- c('year', 'month', 'day', 'hour', 'minute', 'second')
+  ct.hr <- ct.time['hour',] - 1 # every 3 hours
+
+  # then match time to 3 hourly ct and get ct timestr for each particle,
+  # find the correct hr and date.hr string given 3 hourly ct
+  endtraj <- endtraj %>% mutate(match.hr = ct.hr[findInterval(hr, ct.hr)],
+    match.date.hr = paste(timestr, formatC(match.hr, width = 2, flag = 0)))
 
   # create a big 5D array for storing CO2 concentration, [lon, lat, 25layer, day, hour]
-  ctco2.all<-array(0, dim=c(length(ct.lon), length(ct.lat), length(ct.level), length(uni.day), length(ct.hh)), dimnames=list(ct.lon, ct.lat, ct.level, uni.day, ct.hh))
-  ctgph.all<-array(0, dim=c(length(ct.lon), length(ct.lat), length(ct.bound), length(uni.day), length(ct.hh)), dimnames=list(ct.lon, ct.lat, ct.bound, uni.day, ct.hh))
+  ctco2.all <- array(0,
+    dim = c(length(ct.lon), length(ct.lat), length(ct.level), length(uni.date), length(ct.hr)),
+    dimnames = list(ct.lon, ct.lat, ct.level, uni.date, ct.hr))
+  ctgph.all <- array(0,
+    dim = c(length(ct.lon), length(ct.lat), length(ct.bound), length(uni.date), length(ct.hr)),
+    dimnames = list(ct.lon, ct.lat, ct.bound, uni.date, ct.hr))
 
-  for (f in 1:length(uni.day)){
+  for (f in 1:length(uni.date)){
 
-    # open the daily file just once
-    ctdat<-nc_open(ctfile[f])
+    ctdat <- nc_open(file.path(ctmole.path, list.files(ctmole.path, uni.date[f])))
 
   	# grab CO2 fields, 25 LEVELS FOR CO2
-  	ct.co2<-ncvar_get(ctdat,"co2")	# [LON, LAT, LEVEL, TIME]
-  	dimnames(ct.co2)<-list(ct.lon, ct.lat, ct.level, ct.hh)
+  	ct.co2 <- ncvar_get(ctdat, 'co2')	# [LON, LAT, LEVEL, TIME]
+  	dimnames(ct.co2) <- list(ct.lon, ct.lat, ct.level, ct.hr)
 
   	# grab geopotentail height, 26 BOUNDS FOR HGT
-  	ct.gph<-ncvar_get(ctdat,"gph")	# [LON, LAT, BOUND, TIME]
-  	dimnames(ct.gph)<-list(ct.lon, ct.lat, ct.bound, ct.hh)
+  	ct.gph <- ncvar_get(ctdat, 'gph')	# [LON, LAT, BOUND, TIME]
+  	dimnames(ct.gph) <- list(ct.lon, ct.lat, ct.bound, ct.hr)
 
     # put into the big array for storing
-    ctco2.all[,,,f,]<-ct.co2  # ppm
-    ctgph.all[,,,f,]<-ct.gph  # in meter
-
+    ctco2.all[,,,f,] <- ct.co2  # ppm
+    ctgph.all[,,,f,] <- ct.gph  # in meter
     nc_close(ctdat)
-  }# end for f
+  }  # end for f
 
-  # to save time, subset CO2 concentration and gph
-  cut.lat<- ct.lat >= floor(min(endtraj[,"lat"])-1) & ct.lat <= ceiling(max(endtraj[,"lat"]))
-  cut.lon<- ct.lon >= floor(min(endtraj[,"lon"])-2) & ct.lon <= ceiling(max(endtraj[,"lon"]))
+  melt.co2 <- melt(ctco2.all)
+  melt.gph <- melt(ctgph.all)
+  colnames(melt.co2) <- list('lon', 'lat', 'layer', 'date', 'hr', 'co2')
+  colnames(melt.gph) <- list('lon', 'lat', 'level', 'date', 'hr', 'gph')
 
-  sel.ct.lat<-ct.lat[cut.lat] # N
-  sel.ct.lon<-ct.lon[cut.lon] # E
-  sel.ct.co2<-ctco2.all[cut.lon,cut.lat,,,]
-  sel.ct.gph<-ctgph.all[cut.lon,cut.lat,,,]
+  # to save time, subset CO2 concentration and gph, add buff of 2 deg
+  melt.co2 <- melt.co2 %>% filter(
+    lat >= floor(min(endtraj$lati) - 2) & lat <= ceiling(max(endtraj$lati) + 2) &
+    lon >= floor(min(endtraj$long) - 2) & lon <= ceiling(max(endtraj$long) + 2))
 
-  # after reading all bio fluxes, assign lon.index, lat.index, day.index and hour.index for each selected trajec
-  lat.index<-findInterval(trunc(endtraj[,"lat"]),sel.ct.lat) # should not be zero
-  lon.index<-findInterval(trunc(endtraj[,"lon"]),sel.ct.lon)
-  day.index<-match(traj.dd,uni.day)
-  hour.index<-findInterval(traj.hh,ct.hh)
+  melt.gph <- melt.gph %>% filter(
+    lat >= floor(min(endtraj$lati) - 2) & lat <= ceiling(max(endtraj$lati) + 2) &
+    lon >= floor(min(endtraj$long) - 2) & lon <= ceiling(max(endtraj$long) + 2))
 
-  bg.co2<-rep(NA,nrow(endtraj))
-  endtraj<-cbind(endtraj,bg.co2)
+  # after reading co2 mole fractions, assign lon.index, lat.index, day.index
+  # and hour.index for each selected trajec
+  sel.ct.lat <- unique(melt.co2$lat)
+  sel.ct.lon <- unique(melt.co2$lon)
+
+  endtraj <- endtraj %>% mutate(
+    match.lati = sel.ct.lat[findInterval(lati, sel.ct.lat)],
+    match.long = sel.ct.lon[findInterval(long, sel.ct.lon)],
+    match.date = timestr, co2 = NA, zasl = zagl + zsfc)
 
   for(e in 1:nrow(endtraj)){
 
-    asl<-endtraj[e,"agl"]+endtraj[e,"grdht"]
+    # get CO2, based on matched lati, long, date, hr from 'endtraj'
+    sel.co2 <- melt.co2 %>% filter(
+      lat == endtraj$match.lati[e] & lon == endtraj$match.long[e] &
+      as.character(date) == endtraj$match.date[e] & hr == endtraj$match.hr[e])
 
-    ### !!! if all endtraj times are the same, previous 5D array will become 4D, which causes a dimension error
-    if(length(dim(sel.ct.co2))==4)ct.hgt<-sel.ct.gph[lon.index[e], lat.index[e], , hour.index[e]]
-    if(length(dim(sel.ct.co2))==5)ct.hgt<-sel.ct.gph[lon.index[e], lat.index[e], , day.index[e], hour.index[e]]
+    sel.gph <- melt.gph %>% filter(
+      lat == endtraj$match.lati[e] & lon == endtraj$match.long[e] &
+      as.character(date) == endtraj$match.date[e] & hr == endtraj$match.hr[e])
 
-    hgt.index<-findInterval(asl,ct.hgt)
-    if(hgt.index==0)hgt.index<-1  # if below the lowest CT levels, use the first level
+    # to further locate one CO2, requires ZASL from endtraj and melt.gph
+    hgt.indx <- findInterval(endtraj$zasl[e], sel.gph$gph)
+
+    # if below the lowest CT levels, use the first level
+    if (hgt.indx == 0)hgt.indx <- 1
 
     # assign CO2 concentration from CT-NRT to endtraj
-    if(length(dim(sel.ct.co2))==4)endtraj[e,"bg.co2"]<-sel.ct.co2[lon.index[e], lat.index[e], hgt.index, hour.index[e]]
-    if(length(dim(sel.ct.co2))==5)endtraj[e,"bg.co2"]<-sel.ct.co2[lon.index[e], lat.index[e], hgt.index, day.index[e], hour.index[e]]
-
+    endtraj$co2[e] <- (sel.co2 %>% filter(layer == hgt.indx))$co2
   }
 
-  # fix 2, comment out the weighting ..., DW, 04/20/2017
-  # further weighted through AK and PW profiles
-  #wgt.bg.co2<-rep(NA,nrow(endtraj))
-  #endtraj<-cbind(endtraj,wgt.bg.co2)
-  #for (n in 1:max(endtraj[,"level"])){
-  #  endtraj[endtraj[,"level"]==n,"wgt.bg.co2"]<-endtraj[endtraj[,"level"]==n,"bg.co2"]*prof[n,"ak.pw"]
-  #}
+  # weight endpts with AK, DW 07/23/2018
+  uni.xhgt <- unique(endtraj$xhgt)
+  combine.prof <- combine.prof %>%
+    mutate(level = as.numeric(rownames(combine.prof))) %>% filter(stiltTF == T)
 
-  # also, compute total dCO2 for each traj over all backwards hours
-  edp.co2<-data.frame(index=endtraj[,"index"],edp=endtraj[,"bg.co2"])
+  wgt.endtraj <- endtraj %>% mutate(level = findInterval(xhgt, uni.xhgt)) %>%
+    full_join(combine.prof, by = 'level') %>% mutate(wgt.co2 = co2 * ak.norm)
+
+  edp.co2 <- data.frame(indx = wgt.endtraj$indx, edp = wgt.endtraj$wgt.co2)
 
   return(edp.co2)
-
 } # end of subroutine

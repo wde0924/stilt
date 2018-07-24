@@ -12,3 +12,5 @@ plot
 *.png
 *.txt
 r/src/old
+.test
+.travis.yml

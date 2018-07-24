@@ -481,9 +481,13 @@ if (run_trans_err) {
   # path for storing CO2 statistics
   store.path <- file.path(output.path, 'trans_err')
 
+  # txt file name for outputting model results
+  txtfile <- file.path(workdir, paste0(timestr, '_', site, '_trans_err_',
+    met, '.txt'))
+
   namelist <- c(namelist, emiss.file = emiss.file, traj.path1 = traj.path1,
     traj.path2 = traj.path2, ct.ver = ct.ver, ctflux.path = ctflux.path,
-    ctmole.path = ctmole.path, store.path = store.path)
+    ctmole.path = ctmole.path, store.path = store.path, txtfile = txtfile)
 
   # call cal.trans.err to estimate trans err
   trans.err <- cal.trans.err(namelist)

@@ -42,6 +42,7 @@ cal.trans.err <- function(namelist, max.sd.trans = 200) {
   # get emissions
   emiss <- raster(namelist$emiss.file)
 	dpar <- namelist$dpar
+  xco2.trans <- NULL
 
 	### loop over all unique lat lon and merge two traj
 	for (i in 1:length(files1)){
@@ -83,8 +84,8 @@ cal.trans.err <- function(namelist, max.sd.trans = 200) {
 
 		#### 4. USE non-weighted trajec (orig vs. err) ----------------------------
 		# to calculate the dCO2.bio
-		co2.bio1 <- bio.trajfoot(trajdat = p1, timestr, namelist$ctpath)
-	  co2.bio2 <- bio.trajfoot(trajdat = p2, timestr, namelist$ctpaht)
+		co2.bio1 <- bio.trajfoot(trajdat = p1, timestr, namelist$ctflux.path)
+	  co2.bio2 <- bio.trajfoot(trajdat = p2, timestr, namelist$ctflux.paht)
 
 		# checking...
 		xco2.bio1 <- check(x = co2.bio1, combine.prof)
@@ -98,24 +99,21 @@ cal.trans.err <- function(namelist, max.sd.trans = 200) {
 		cat('For endpoints Contribution...\n')
 
 		# !!! remember to weight background concentration with Averaging Kernel
-		co2.edp1 <- endpts.trajfoot(trajdat = p1, ident = sel.orig.outname)
-		co2.edp2 <- endpts.trajfoot(trajdat = p2, ident = lower.err.outname)
-
+		co2.edp1 <- endpts.trajfoot(trajdat = p1, namelist$ctmole.path, combine.prof)
+		co2.edp2 <- endpts.trajfoot(trajdat = p2, namelist$ctmole.path, combine.prof)
 
 		### 6. NOW, sum up all 3 contributions ------------------------------------
 		# to calculate CO2.true profiles (w/wout errors) for each particle
-		merge.co2 <- co2.ff1 %>%
-		  full_join(co2.ff2,  by = 'indx') %>%
-		  full_join(co2.bio1, by = 'indx') %>%
-		  full_join(co2.bio2, by = 'indx') %>%
-		  full_join(co2.edp1, by = 'indx') %>%
-			full_join(co2.edp2, by = 'indx') %>%
-			mutate(tot1 = ff.sum.x + bio.sum.x + edp.sum.x,
-				tot2 = ff.sum.y + bio.sum.y + edp.sum.y) %>% na.omit()
+		merge.co2 <- co2.ff1 %>% full_join(co2.ff2,  by = 'indx') %>%
+		  full_join(co2.bio1, by = 'indx') %>% full_join(co2.bio2, by = 'indx') %>%
+		  full_join(co2.edp1, by = 'indx') %>% full_join(co2.edp2, by = 'indx') %>%
+			mutate(
+				tot1 = ff.sum.x + bio.sum.x + edp.sum.x,
+				tot2 = ff.sum.y + bio.sum.y + edp.sum.y) %>%
+			na.omit()
 
 		# assign level index to co2 for each traj
 		merge.co2$level<-	rep(seq(1, nrow(merge.co2)/dpar), each = dpar)
-
 
 		### 7. calculate the variances at each level ------------------------------
 		# v3 for non-removal, using dVAR*AK^2*PW^2
@@ -166,8 +164,9 @@ cal.trans.err <- function(namelist, max.sd.trans = 200) {
 		tot.trans.sd <- sqrt(sum(prod.trans, na.rm=T))
 		print(tot.trans.sd)		# now in ppm
 		xco2.trans <- c(xco2.trans, tot.trans.sd)
-
 	} # end of lat loop i
 
-
+	# write in txtfile
+	result <- cbind(timestr, recp.lon, recp.lat, xco2.trans)
+  write.table(result, file = namelist$txtfile, sep = ',', quote = F, row.names = F)
 }

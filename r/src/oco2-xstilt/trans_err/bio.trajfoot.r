@@ -12,7 +12,7 @@
 # default ct.hr = 0, 3, 6, 9, 12, 15, 18, 21 UTC, left-edge hr, not centered hr
 # default variable name when reading as raster, 'bio_flux_opt' used in CT
 
-bio.trajfoot <- function(trajdat, timestr, ctpath, ct.hr = seq(0, 21, 3),
+bio.trajfoot <- function(trajdat, timestr, ctflux.path, ct.hr = seq(0, 21, 3),
   varname = 'bio_flux_opt'){
 
   library(raster)
@@ -32,16 +32,10 @@ bio.trajfoot <- function(trajdat, timestr, ctpath, ct.hr = seq(0, 21, 3),
     hr  = as.numeric(substr(traj.date, 12, 13)))
   uni.date <- unique(trajdat$timestr)
 
-  # read one file first
-  tmpfile <- list.files(path = ctpath, pattern = uni.date[1])
-  ct <- raster(file.path(ctpath, tmpfile), band = 1, varname = varname)
-  #ct.date <- ncvar_get(nc_open(file.path(ctpath, tmpfile[1])), 'date_components')
-
   # then match time to 3 hourly ct and get ct timestr for each particle,
   # find the correct hr and date.hr string given 3 hourly ct
   trajdat <- trajdat %>% mutate(match.hr = ct.hr[findInterval(hr, ct.hr)],
-    match.date.hr = paste0(trajdat$timestr,
-      formatC(trajdat$match.hr, width = 2, flag = 0)))
+    match.date.hr = paste0(timestr, formatC(match.hr, width = 2, flag = 0)))
   uni.date.hr <- unique(trajdat$match.date.hr)
   uni.hr <- as.numeric(substr(uni.date.hr, 9, 10))
 
