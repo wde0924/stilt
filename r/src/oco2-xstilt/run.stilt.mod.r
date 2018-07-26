@@ -3,7 +3,7 @@
 # Ben Fasoli
 
 # preserve original "run_stilt.r" and modify "run_stilt.r" as a subroutine
-# for OCO2/X-STILT, DW, last update on 06/01/2018
+# add ziscale, DW, 07/25/2018
 
 run.stilt.mod <- function(namelist){
 
@@ -19,6 +19,7 @@ run.stilt.mod <- function(namelist){
   pwf.wgt   <- namelist$pwf.wgt    # whether weighted foot by pres weighting
   oco2.path <- namelist$oco2.path
   stilt.ver <- namelist$stilt.ver
+  dmassTF   <- namelist$dmassTF
 
   # Model control
   rm_dat     <- T
@@ -106,7 +107,8 @@ run.stilt.mod <- function(namelist){
   veght       <- 0.5
   vscale      <- 200
   w_option    <- 0
-  zicontroltf <- 0
+  zicontroltf <- namelist$zicontroltf
+  ziscale     <- namelist$ziscale   # prescribe PBL scaling, vector form
   z_top       <- 25000
 
   # Parallel simulation settings
@@ -176,9 +178,9 @@ run.stilt.mod <- function(namelist){
                         slurm = slurm, slurm_options = slurm_options,
                         n_cores = n_cores, n_nodes = n_nodes, rm_dat = rm_dat,
                         ak.wgt = ak.wgt, conage = conage, cpack = cpack,
-                        delt = delt, emisshrs = emisshrs, frhmax = frhmax,
-                        frhs = frhs, frme = frme, frmr = frmr, frts = frts,
-                        frvs = frvs, hnf_plume = hnf_plume,
+                        delt = delt, dmassTF = dmassTF, emisshrs = emisshrs,
+                        frhmax = frhmax, frhs = frhs, frme = frme, frmr = frmr,
+                        frts = frts, frvs = frvs, hnf_plume = hnf_plume,
                         horcoruverr = horcoruverr, horcorzierr = horcorzierr,
                         ichem = ichem, iconvect = iconvect, initd = initd,
                         isot = isot, kbls = kbls, kblt = kblt, kdef = kdef,
@@ -205,8 +207,8 @@ run.stilt.mod <- function(namelist){
                         tvmix = tvmix, varsiwant = varsiwant, veght = veght,
                         vscale = vscale, w_option = w_option,
                         xmn = xmn, xmx = xmx, xres = xres, ymn = ymn, ymx = ymx,
-                        yres = yres, zicontroltf = zicontroltf, z_top = z_top,
-                        zcoruverr = zcoruverr)
+                        yres = yres, zicontroltf = zicontroltf,
+                        ziscale = ziscale, z_top = z_top, zcoruverr = zcoruverr)
   q('no')
 
 }

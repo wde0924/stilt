@@ -1,7 +1,7 @@
 # script to plot XCO2 contribution with observed XCO2 on spatial maps,
 # written by Dien Wu, 06/18/2018
 
-ggmap.xco2.obs <- function(mm, lon.lat, site, facet.nrow, nhrs.back, dpar, sf, 
+ggmap.xco2.obs <- function(mm, lon.lat, site, facet.nrow, nhrs.back, dpar, sf,
   stilt.ver, timestr, font.size = rel(0.9), recp.lon, recp.lat, obs, xco2,
   picname, storeTF, width = 12, height = 8){
 
@@ -14,10 +14,11 @@ ggmap.xco2.obs <- function(mm, lon.lat, site, facet.nrow, nhrs.back, dpar, sf,
   cat('Reading OCO-2 data according to the spatial domain of ggmap...\n')
   obs <- grab.oco2(ocopath = oco2.path, timestr, lon.lat = map.ext) # grab obs
 
-  # select on footprints using map.ext
+  # select xco2 using map.ext
   library(dplyr)
   sel.xco2 <- xco2 %>% filter(lon >= map.ext[1] & lon <= map.ext[2] &
     lat >= map.ext[3] & lat <= map.ext[4])
+  sum.xco2 <- sel.xco2 %>% group_by(fac) %>% dplyr::summarize(sum = sum(xco2))
 
   title <- paste('Spatial contribution of XCO2 [ppm] (',
     nhrs.back, ' hours back; dpar =', dpar, '; smooth factor =', sf,
@@ -29,7 +30,10 @@ ggmap.xco2.obs <- function(mm, lon.lat, site, facet.nrow, nhrs.back, dpar, sf,
 
   if (length(unique(sel.xco2$fac)) > 1){
     # receptor locations and add receptors on map
-    sel.recp <- data.frame(lon = recp.lon, lat = recp.lat, fac = recp.lat)
+    sel.recp <- data.frame(lon = recp.lon, lat = recp.lat,
+      fac = unique(sel.xco2$fac)) %>% full_join(sum.xco2, by = 'fac')
+    sel.recp$x <- map.ext[2] - 0.8
+    sel.recp$y <- map.ext[4] - 0.5
     print(sel.recp)
 
     p1 <- p1 +
@@ -37,7 +41,9 @@ ggmap.xco2.obs <- function(mm, lon.lat, site, facet.nrow, nhrs.back, dpar, sf,
       facet_wrap(~ fac, nrow = facet.nrow) +
       geom_text(data = sel.recp, aes(lon + 1, lat), size = 2, colour = 'purple',
         label = 'receptor', fontface = 2) +
-      facet_wrap(~fac, nrow = facet.nrow)
+      facet_wrap(~fac, nrow = facet.nrow) +
+      geom_text(data = sel.recp, aes(x, y, label = signif(sum, 3)),
+        fontface = 2, size = 4)
   }  # end if
 
   # plot observed XCO2, add xco2 raster layer

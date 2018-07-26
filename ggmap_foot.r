@@ -6,10 +6,17 @@ plotdir <- file.path(homedir, 'lin-group5/wde/github/plot')
 source('r/dependencies.r')
 
 ####
-site <- 'Riyadh'
-met  <- c('1km', 'gdas', 'gdas0p5')[3]
+site      <- 'Riyadh'
+stilt.ver <- 2  # for STILT version
+dmassTF   <- F  # if using STILTv1
+nhrs      <- c(-12, -24, -36, -48, -72)[2]  # hours back for trajec
+dpar      <- c(10, 50, 100, 2500)[3]        # number of particles per level
+sf        <- c(0, 1, 2)[2]                  # smooth factor for footprints
+ziscale   <- c(NULL, 0.8, 1.0, 1.2)[2]      # prescibed zi scaling
+foot.str  <- c('sf0', 'sf1', 'sf2', 'trajecfoot', 'trajecfoot_dmassF')[2]
+
 oco2.ver  <- c('b7rb', 'b8r')[1]  # for oco2 version
-oco2.path <- file.path(homedir, 'lin-group5/wde/input_data', 'OCO-2/L2',
+oco2.path <- file.path(homedir, 'lin-group5/wde/input_data/OCO-2/L2',
   paste0('OCO2_lite_', oco2.ver))
 
 # lon.lat: minlon, maxlon, minlat, maxlat, city.lon, city.lat
@@ -42,14 +49,6 @@ cat(paste('Working on:', timestr, 'for city/region:', site, '...\n'))
 #wgttraj.path <- cp.xfiles(workdir, v = 3, nhrs, dpar, site, cpTF)
 
 ### read footprint files
-nhrs <- c(-12, -24, -36, -48, -72)[1]  # hours back for trajec
-dpar <- c(10, 50, 100, 2500)[3]  # number of particles per level
-foot.str <- c('sf0', 'sf1', 'sf2', 'trajecfoot', 'trajecfoot_dmassF')[5]
-
-stilt.ver <- 1  # for STILT version
-dmassTF <- F
-#if (foot.str == 'trajecfoot') stilt.ver <- 1  # for STILT version
-
 if (dpar == 2500) {
   workdir <- file.path(homedir, 'lin-group5/wde/github/cp_test')
   foot.path <- file.path(workdir, paste0('out_', timestr, '_', dpar, 'dpar'),
@@ -60,14 +59,16 @@ if (dpar == 2500) {
   foot.file <- basename(foot.file)
 
 } else {
-  workdir <- file.path(homedir, 'lin-group5/wde/github/cp_trajecfoot')
-  foot.path <- file.path(workdir, 'out', paste0('footprints_', foot.str))
+  #workdir <- file.path(homedir, 'lin-group5/wde/github/cp_trajecfoot')
+  #foot.path <- file.path(workdir, 'out', paste0('footprints_', foot.str))
   #foot.path <- file.path(workdir, paste0('out_', timestr, '_', dpar, 'dpar'),
   #  paste0('footprints_', foot.str))
-  foot.file <- list.files(path = foot.path, pattern = 'foot.nc')
+
+  foot.path <- file.path(homedir, 'lin-group5/wde/github/stilt/ziscale_test/')
+  foot.file <- list.files(path = foot.path, pattern = 'foot.nc', recursive = T)[-4]
 }
 
-foot.name <- gsub('_X_foot.nc', '', foot.file)
+foot.name <- gsub('_X_foot.nc', '', basename(foot.file))
 recp.info <- data.frame(matrix(unlist(strsplit(foot.name, '_')), byrow = T,
   ncol = 3), stringsAsFactors = F)
 colnames(recp.info) <- c('timestr', 'recp.lon', 'recp.lat')
@@ -82,15 +83,21 @@ recp.lon <- as.numeric(recp.info$recp.lon)
 uni.timestr <- unique(recp.info$timestr)
 print(uni.timestr)
 
-# select receptors to plot
-#if (site == 'Riyadh' & tt == ) find.lat <- seq(23.4, 24.7, 0.15)
-if (site == 'Riyadh' & tt == 3) find.lat <- seq(24.3, 25.0, 0.1)
-#if (site == 'Riyadh') find.lat <- seq(25, 26, 0.15)
-if (site == 'Baghdad') find.lat <- seq(32, 34, 0.2)
+selTF <- F
+if (selTF) {
+  # select receptors to plot
+  #if (site == 'Riyadh' & tt == ) find.lat <- seq(23.4, 24.7, 0.15)
+  if (site == 'Riyadh' & tt == 3) find.lat <- seq(24.3, 25.0, 0.1)
+  #if (site == 'Riyadh') find.lat <- seq(25, 26, 0.15)
+  if (site == 'Baghdad') find.lat <- seq(32, 34, 0.2)
 
-sel <- findInterval(find.lat, recp.lat)
-sel.lat <- recp.lat[sel]; sel.lon <- recp.lon[sel]
+  sel <- findInterval(find.lat, recp.lat)
+} else {
+  sel <- 1:length(foot.file)
+}
 
+sel.lat <- recp.lat[sel]
+sel.lon <- recp.lon[sel]
 sel.foot.file <- foot.file[sel]
 print(basename(sel.foot.file))
 
@@ -100,7 +107,7 @@ foot.all  <- NULL; foot.count <- NULL
 
 for (s in 1:length(sel.foot.file)) {
 #s = 3
-  cat('Working on latitude', sel.lat[s], 'N...\n')
+  cat('Working on file:', sel.foot.file[s], '...\n')
   source('r/dependencies.r')
   melt.foot <- grab.foot(stilt.ver = 2, footfile = sel.foot.file[s],
     foot.sig = foot.sig, lon.lat = NULL)
@@ -130,31 +137,32 @@ for (s in 1:length(sel.foot.file)) {
   }
 
   # storing
-  foot.all <- rbind(foot.all, melt.foot)
-  foot.count<- c(foot.count, nrow(melt.foot))
+  foot.all   <- rbind(foot.all, melt.foot)
+  foot.count <- c(foot.count, nrow(melt.foot))
 } # end for s
 
-sel.foot <- foot.all %>% mutate(fac = rep(sel.lat, foot.count))
+#sel.foot <- foot.all %>% mutate(fac = rep(sel.lat, foot.count))
+sel.foot <- foot.all %>% mutate(fac = rep(c(0.8, 1.0, 1.2), foot.count))
 
 
 #### plot footprint
 if (met == '1km') met <- 'wrf'
 
 # load google map
-zoom <- 8
+zoom <- 7
 mm <- ggplot.map(map = 'ggmap', center.lat = lon.lat[6],
   center.lon = lon.lat[5] + 0.1, zoom = zoom)
 
 source('r/dependencies.r')
 picname <- file.path(plotdir, 'xfoot',
   paste0('xfoot_', site, '_', uni.timestr, '_', met, '_STILTv', stilt.ver,
-    '_zoom', zoom, '_', nhrs, 'hrs_', dpar, 'dpar_', foot.str, '.png'))
+    '_zoom', zoom, '_', nhrs, 'hrs_', dpar, 'dpar_', foot.str, '_ziscale.png'))
 
 pp1 <- ggmap.xfoot.obs(mm = mm, lon.lat = lon.lat, site = site,
-  oco2.path = oco2.path, facet.nrow = 3, facet.ncol = 4, nhrs = nhrs,
+  oco2.path = oco2.path, facet.nrow = 1, facet.ncol = 3, nhrs = nhrs,
   dpar = dpar, stilt.ver = 2, foot.str = foot.str, timestr = timestr,
   font.size = rel(1.2), recp.lon = sel.lon, recp.lat = sel.lat,
-  foot = sel.foot, picname = picname, storeTF = T, width = 14, height = 8)
+  foot = sel.foot, picname = picname, storeTF = T, width = 16, height = 7)
 
 
 

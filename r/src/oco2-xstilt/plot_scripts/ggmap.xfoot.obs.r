@@ -18,7 +18,7 @@ ggmap.xfoot.obs <- function(mm, lon.lat, site, oco2.path, facet.nrow = NULL,
   cat('Reading OCO-2 data according to the spatial domain of ggmap...\n')
   obs <- grab.oco2(ocopath = oco2.path, timestr = timestr, lon.lat = map.ext)
 
-  # select on footprints using map.ext
+  # select footprints using map.ext
   library(dplyr)
   sel.foot <- foot %>% filter(lon >= map.ext[1] & lon <= map.ext[2] &
     lat >= map.ext[3] & lat <= map.ext[4])
@@ -33,13 +33,13 @@ ggmap.xfoot.obs <- function(mm, lon.lat, site, oco2.path, facet.nrow = NULL,
   p1 <- m1 + labs(title = title, x = 'LONGITUDE [E]', y = 'LATITUDE [N]')
 
   # if there is 1+ receptors
-  if (length(recp.lat) > 1){
+  if (length(unique(sel.foot$fac)) > 1){
 
     # receptor locations and add receptors on map
     sel.recp <- data.frame(lon = recp.lon + mm[[3]], lat = recp.lat + mm[[2]],
-      fac = recp.lat) %>% full_join(sum.foot, by = 'fac')
-    sel.recp$x <- map.ext[2] - 0.5
-    sel.recp$y <- map.ext[4] - 0.3
+      fac = unique(sel.foot$fac)) %>% full_join(sum.foot, by = 'fac')
+    sel.recp$x <- map.ext[2] - 0.8
+    sel.recp$y <- map.ext[4] - 0.5
     print(sel.recp)
 
     p1 <- p1 +

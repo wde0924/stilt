@@ -12,6 +12,9 @@
 #' @import uataq
 #' @export
 
+# add ziscale (vector form) with length of numbers of hours that the PBL height
+# needed to be changed and values for PBL scaling factors, DW, 07/25/2018
+
 calc_trajectory <- function(varsiwant, conage, cpack, delt, dxf, dyf, dzf,
                             emisshrs, frhmax, frhs, frme, frmr, frts, frvs,
                             hscale, ichem, iconvect, initd, isot, ivmax, kbls,
@@ -20,10 +23,19 @@ calc_trajectory <- function(varsiwant, conage, cpack, delt, dxf, dyf, dzf,
                             ndump, ninit, numpar, nturb, n_hours, outdt, outfrac,
                             output, p10f, qcycle, random, splitf, tkerd, tkern,
                             rm_dat, timeout, tlfrac, tratio, tvmix, veght,
-                            vscale, winderrtf, w_option, zicontroltf, z_top,
-                            rundir) {
+                            vscale, winderrtf, w_option, zicontroltf, ziscale,
+                            z_top, rundir) {
 
   require(uataq)
+
+  # see if we need to write a ZICONTROL file first, DW, 07/25/2018
+  if (zicontroltf == 1 & !is.null(ziscale)) {
+    # write the first line with number of hours that the PBL height will be changed
+    write(x = length(ziscale), file = file.path(rundir, 'ZICONTROL'))
+
+    # write each subsequent line indicates the scaling factor for that hour
+    write(ziscale, file = file.path(rundir, 'ZICONTROL'), sep = '\n', append = T)
+  }
 
   # Write SETUP.CFG, CONTROL, and runhymodelc.sh files to control model
   write_setup(varsiwant, conage, cpack, delt, dxf, dyf, dzf, frhmax, frhs, frme,
@@ -79,7 +91,7 @@ calc_trajectory <- function(varsiwant, conage, cpack, delt, dxf, dyf, dzf,
   # .rds file, and return particle data frame
   p <- read_particle(file = pf, varsiwant = varsiwant)
   if (rm_dat) system(paste('rm', pf))
-  
+
   # For column trajectories, preserve release height as xhgt
   if (length(output$receptor$zagl) > 1) {
     x_heights <- output$receptor$zagl

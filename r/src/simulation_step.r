@@ -13,7 +13,8 @@
 # extra functions including 'get.oco2.info()', 'get.ground.hgt()',
 #                           'get.wgt.funcv3()', 'wgt.trajec.footv3()'
 # add 'run_foot', if false, then no need to run footprint. DW, 06/04/2018
-# add Trajecfoot() too, DW, 07/17/2018
+# add STILTv1 and Trajecfoot(), DW, 07/17/2018
+# add ziscale as list, remember to unlist, DW, 07/25/2018
 
 # for debug --
 if(F){
@@ -23,9 +24,9 @@ if(F){
 
 simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
                             ak.wgt = NA, conage = 48, cpack = 1, delt = 0,
-                            dxf = 1, dyf = 1, dzf = 0.01, emisshrs = 0.01,
-                            frhmax = 3, frhs = 1, frme = 0.1, frmr = 0,
-                            frts = 0.1, frvs = 0.1, hnf_plume = T,
+                            dmassTF = F, dxf = 1, dyf = 1, dzf = 0.01,
+                            emisshrs = 0.01, frhmax = 3, frhs = 1, frme = 0.1,
+                            frmr = 0, frts = 0.1, frvs = 0.1, hnf_plume = T,
                             hscale = 10800, horcoruverr = NA, horcorzierr = NA,
                             ichem = 0, iconvect = 0, initd = 0, isot = 0,
                             kbls = 1, kblt = 1, kdef = 1, khmax = 9999,
@@ -43,24 +44,27 @@ simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
                             splitf = 1, stilt.ver = 2, time_integrate = F,
                             timeout = 3600, tkerd = 0.18, tkern = 0.18,
                             tlfrac = 0.1, tluverr = NA, tlzierr = NA,
-                            tratio = 0.9, tvmix = 1,
-                            varsiwant = NULL, veght = 0.5, vscale = 200,
+                            tratio = 0.9, tvmix = 1, varsiwant = NULL,
+                            veght = 0.5, vscale = 200,
                             w_option = 0, xmn = -180, xmx = 180, xres = 0.1,
                             ymn = -90, ymx = 90, yres = xres, zicontroltf = 0,
-                            z_top = 25000, zcoruverr = NA) {
+                            ziscale = NULL, z_top = 25000, zcoruverr = NA) {
   try({
     # If using lapply or parLapply, receptors are passed as vectors and need to
     # be subsetted for the specific simulation index
+    # add ziscale, DW
     if (length(r_run_time) > 1) {
       r_run_time <- r_run_time[X]
-      r_lati <- r_lati[X]
-      r_long <- r_long[X]
-      r_zagl <- r_zagl[X]
+      r_lati  <- r_lati[X]
+      r_long  <- r_long[X]
+      r_zagl  <- r_zagl[X]
+      ziscale <- ziscale[X]
     }
 
     # Column trajectories use r_zagl passed as a list of values for lapply and
     # parLapply but a vector in slurm_apply
-    r_zagl <- unlist(r_zagl)
+    r_zagl  <- unlist(r_zagl)
+    ziscale <- unlist(ziscale)  # a vector now
 
     # Ensure dependencies are loaded for current node/process
     source(file.path(stilt_wd, 'r/dependencies.r'), local = T)
@@ -115,6 +119,7 @@ simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
         # get.ground.height() that calls calc_trajectory() to estimate ground
         # height [m] along w. u-, v- and w- component instantaneous wind
         # given receptor lat/lon/time/agl=5 (near ground)
+        # remove ziscale and zicontroltf from get.ground.hgt(), DW
         recp.var <- get.ground.hgt(varsiwant, conage, cpack, dxf, dyf, dzf,
                                    emisshrs, frhmax, frhs, frme, frmr, frts,
                                    frvs, hscale, ichem, iconvect, initd, isot,
@@ -125,7 +130,7 @@ simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
                                    p10f, qcycle, random, splitf, tkerd, tkern,
                                    rm_dat, receptor = output$receptor, rundir,
                                    timeout, tlfrac, tratio, tvmix, veght,
-                                   vscale, w_option, zicontroltf, z_top)
+                                   vscale, w_option, z_top)
 
         # paste interpolated info to output$receptor
         output$receptor <- c(output$receptor, recp.var)
@@ -152,7 +157,8 @@ simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
                                   nturb, n_hours, outdt, outfrac, output, p10f,
                                   qcycle, random, splitf, tkerd, tkern, rm_dat,
                                   timeout, tlfrac, tratio, tvmix, veght, vscale,
-                                  0, w_option, zicontroltf, z_top, rundir)
+                                  0, w_option, zicontroltf, ziscale, z_top,
+                                  rundir)
       if (is.null(particle)) return()
 
       # Bundle trajectory configuration metadata with trajectory informtation
@@ -179,7 +185,7 @@ simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
                                           splitf, tkerd, tkern, rm_dat, timeout,
                                           tlfrac, tratio, tvmix, veght, vscale,
                                           winderrtf, w_option, zicontroltf,
-                                          z_top, rundir)
+                                          ziscale, z_top, rundir)
         if (is.null(particle_error)) return()
         output$particle_error <- particle_error
         output$particle_error_params <- list(siguverr = siguverr,
@@ -188,7 +194,8 @@ simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
                                              horcoruverr = horcoruverr,
                                              sigzierr = sigzierr,
                                              tlzierr = tlzierr,
-                                             horcorzierr = horcorzierr)
+                                             horcorzierr = horcorzierr,
+                                             ziscale = ziscale)
       }
 
       # Save output object to compressed rds file and symlink to out/particles
@@ -219,10 +226,10 @@ simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
     if (length(r_zagl) > 1) {
       # check whether weighted trajec exists already,
       # directly grab from by-id directory, DW, 07/13/2018
-      wgt.file <- file.path(rundir,
-        list.files(path = rundir, pattern = '_wgttraj.rds'))
+      wgt.file <- file.path(rundir, paste0(basename(rundir), '_wgttraj.rds'))
+      print(wgt.file)
 
-      if (length(wgt.file) > 0) {
+      if (file.exists(wgt.file) > 0) {
         wgt.output <- readRDS(wgt.file)
 
       } else {
@@ -235,6 +242,7 @@ simulation_step <- function(X, rm_dat = T, stilt_wd = getwd(), lib.loc = NULL,
 
         # call weight.trajecfootv3() to start weighting trajec-level footprint,
         # before calculating 2D footprint; ak.wgt and pwf.wgt as weighting flags
+        output$file <- wgt.file      # overwrite filename
         wgt.output <- wgt.trajec.footv3(output = output, oco2.info = oco2.info,
                                         ak.wgt = ak.wgt, pwf.wgt = pwf.wgt)
       }  # end if file.exists()

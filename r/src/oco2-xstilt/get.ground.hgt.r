@@ -18,7 +18,7 @@ get.ground.hgt <- function(varsiwant, conage, cpack, dxf, dyf, dzf, emisshrs,
                            ncycl, ndump, ninit, n_hours, outdt, outfrac, p10f,
                            qcycle, random, splitf, tkerd, tkern, rm_dat,
                            receptor, rundir, timeout, tlfrac, tratio, tvmix,
-                           veght, vscale, w_option, zicontroltf, z_top){
+                           veght, vscale, w_option, z_top){
 
   # before run trajec, create new 'output'
   output  <- list()
@@ -47,6 +47,7 @@ get.ground.hgt <- function(varsiwant, conage, cpack, dxf, dyf, dzf, emisshrs,
   # Execute particle trajectory simulation, and read results into data frame
   if (!file.exists(output$file)) {
     cat('get.ground.hgt(): trajec NOT found...\n')
+    # for simply getting ground heights, no need to add ziscale or other wind errors
     particle <- calc_trajectory(varsiwant, conage, cpack, delt, dxf, dyf, dzf,
                                 emisshrs, frhmax, frhs, frme, frmr, frts, frvs,
                                 hscale, ichem, iconvect, initd, isot, ivmax,
@@ -56,7 +57,8 @@ get.ground.hgt <- function(varsiwant, conage, cpack, dxf, dyf, dzf, emisshrs,
                                 nturb, n_hours, outdt, outfrac, output, p10f,
                                 qcycle, random, splitf, tkerd, tkern, rm_dat,
                                 timeout, tlfrac, tratio, tvmix, veght, vscale,
-                                0, w_option, zicontroltf, z_top, rundir)
+                                0, w_option, zicontroltf = F, ziscale = NA,
+                                z_top, rundir)
 
     saveRDS(particle, output$file)   # store traj
     cat(paste(basename(output$file), "created...\n"))

@@ -10,23 +10,22 @@ setwd(workdir)
 source(file.path(workdir, 'r/dependencies.r'))
 
 ####
-#site <- 'Baghdad'
-site <- 'Riyadh'
-
+site      <- 'Riyadh'
 stilt.ver <- 2  # for STILT version
-nhrs <- c(-12, -24, -36, -48, -72)[1]  # hours back for trajec
-dpar <- c(10, 50, 100, 2500)[4]  # number of particles per level
-sf   <- c(0, 1, 2)[1]   # smooth factor for footprints
+nhrs      <- c(-12, -24, -36, -48, -72)[2]  # hours back for trajec
+dpar      <- c(10, 50, 100, 2500)[3]        # number of particles per level
+sf        <- c(0, 1, 2)[2]                  # smooth factor for footprints
+ziscale   <- c(NULL, 0.8, 1.0, 1.2)[2]      # prescibed zi scaling
 
-met  <- c('1km', 'gdas', 'gdas0p5')[3]
+met       <- c('1km', 'gdas', 'gdas0p5')[3]
 oco2.ver  <- c('b7rb', 'b8r')[1]  # for oco2 version
 oco2.path <- file.path(homedir, 'lin-group5/wde/input_data/OCO-2/L2',
   paste0('OCO2_lite_', oco2.ver))
 
 # lon.lat: minlon, maxlon, minlat, maxlat, city.lon, city.lat
 output.path <- file.path(homedir, 'lin-group5/wde/github/result')
-txtpath <- file.path(output.path, 'oco2_overpass')
-site.info <- get.site.track(site, oco2.ver, oco2.path, searchTF = F,
+txtpath     <- file.path(output.path, 'oco2_overpass')
+site.info   <- get.site.track(site, oco2.ver, oco2.path, searchTF = F,
   date.range = c('20140901', '20171231'), thred.count.per.deg = 200,
   lon.lat = get.lon.lat(site), urbanTF = T, dlon.urban = 0.5, dlat.urban = 0.5,
   thred.count.per.deg.urban = 100, txtpath = txtpath)
@@ -45,12 +44,14 @@ cat(paste('Working on:', timestr, 'for city/region:', site, '...\n'))
 
 ### grab receptor info, for STILT-R v2 ---------------
 #xco2.path <- file.path(homedir, 'lin-group5/wde/github/result/foot_emiss', site)
-xco2.path <- file.path(homedir, 'lin-group5/wde/github/result/foot_emiss')
+#xco2.path <- file.path(homedir, 'lin-group5/wde/github/result/foot_emiss')
+xco2.path <- file.path(homedir, 'lin-group5/wde/github/stilt/ziscale_test/')
 print(xco2.path)
 
 # read all file names
-xco2.file <- list.files(path = xco2.path, pattern = as.character(timestr))
-xco2.name <- gsub('_X_foot_emiss.nc', '', xco2.file)
+xco2.file <- list.files(path = xco2.path, pattern = 'X_foot_emiss.nc',
+  recursive = T)
+xco2.name <- gsub('_X_foot_emiss.nc', '', basename(xco2.file))
 recp.info <- data.frame(matrix(unlist(strsplit(xco2.name, '_')), byrow = T,
   ncol = 3), stringsAsFactors = F)
 colnames(recp.info) <- c('timestr', 'recp.lon', 'recp.lat')
@@ -64,12 +65,18 @@ recp.lon <- as.numeric(recp.info$recp.lon)
 uni.timestr <- unique(recp.info$timestr)
 print(uni.timestr)
 
-# select receptors to plot
-if (site == 'Riyadh') find.lat <- c(seq(24, 26, 0.3), 24.5444+0.01)
-if (site == 'Phoenix') find.lat <- seq(31.9, 34, 0.2)
-if (site == 'Baghdad') find.lat <- seq(32, 34, 0.2)
+# whether to select several receptors
+selTF <- F
+if (selTF) {
+  # select receptors to plot
+  if (site == 'Riyadh')  find.lat <- c(seq(24, 26, 0.3), 24.5444+0.01)
+  if (site == 'Phoenix') find.lat <- seq(31.9, 34, 0.2)
+  if (site == 'Baghdad') find.lat <- seq(32, 34, 0.2)
+  sel <- findInterval(find.lat, recp.lat)
+} else {
+  sel <- 1:length(xco2.file)
+} # end of selTF
 
-sel <- findInterval(find.lat, recp.lat)
 sel.lat <- recp.lat[sel]
 sel.lon <- recp.lon[sel]
 sel.xco2.file <- xco2.file[sel]
@@ -80,23 +87,24 @@ xco2.sig <- 1E-6
 xco2.all <- NULL; xco2.count <- NULL
 
 for (s in 1:length(sel.xco2.file)) {
-  cat('Working on latitude', sel.lat[s], 'N...\n')
-  xco2.dat <- raster(file.path(xco2.path, sel.xco2.file[s]))
+  cat('Working on file:', sel.xco2.file[s], '...\n')
+  xco2.dat  <- raster(file.path(xco2.path, sel.xco2.file[s]))
   melt.xco2 <- raster::as.data.frame(x = xco2.dat, xy = T)
   colnames(melt.xco2) <- c('lon', 'lat', 'xco2')
 
-  melt.xco2 <- melt.xco2 %>% filter(xco2 > xco2.sig)
+  melt.xco2  <- melt.xco2 %>% filter(xco2 > xco2.sig)
 
   # storing
-  xco2.all <- rbind(xco2.all, melt.xco2)
+  xco2.all   <- rbind(xco2.all, melt.xco2)
   xco2.count <- c(xco2.count, nrow(melt.xco2))
 } # end for s
 
-sel.xco2 <- xco2.all %>% mutate(fac = rep(sel.lat, xco2.count))
+#sel.xco2 <- xco2.all %>% mutate(fac = rep(sel.lat, xco2.count))
+sel.xco2 <- xco2.all %>% mutate(fac = rep(c(0.8, 1.0, 1.2), xco2.count))
 
 #### plot xco2
 if (met == '1km') met <- 'wrf'
-zoom <- 8
+zoom <- 7
 
 # load google map
 mm <- ggplot.map(map = 'ggmap', center.lat = lon.lat[6],
@@ -105,13 +113,13 @@ mm <- ggplot.map(map = 'ggmap', center.lat = lon.lat[6],
 ## for XSTILTv2
 picname <- file.path(plotdir, 'xco2', paste0('xco2_', site, '_', uni.timestr,
   '_', met, '_STILTv2_zoom', zoom, '_', nhrs, 'hrs_', dpar, 'dpar_sf', sf,
-  '_brute.png'))
+  '_ziscale.png'))
 
 source(file.path(workdir, 'r/dependencies.r'))
-pp <- ggmap.xco2.obs(mm, lon.lat, site, facet.nrow = 2,
+pp <- ggmap.xco2.obs(mm, lon.lat, site, facet.nrow = 1,
   nhrs, dpar, sf, stilt.ver = 2, timestr, font.size = rel(1.1),
   recp.lon = sel.lon, recp.lat = sel.lat, obs = obs, xco2 = sel.xco2,
-  picname, storeTF = T, width = 16, height = 10)
+  picname, storeTF = T, width = 16, height = 7)
 
 
 ### end of XSTILTv2 ---------------

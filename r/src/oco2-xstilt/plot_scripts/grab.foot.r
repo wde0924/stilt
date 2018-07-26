@@ -9,8 +9,8 @@ grab.foot <- function(stilt.ver, footfile, foot.sig = 1E-6, lon.lat = NULL){
 
     footdat <- nc_open(footfile)
     foot <- ncvar_get(footdat, 'footprint')
-    lat <- ncvar_get(footdat, 'Lat') + 1/240  # move to centered lat lon
-    lon <- ncvar_get(footdat, 'Lon') + 1/240
+    lat  <- ncvar_get(footdat, 'Lat') + 1/240  # move to centered lat lon
+    lon  <- ncvar_get(footdat, 'Lon') + 1/240
     dimnames(foot) <- list(lat, lon)
 
     melt.foot <- melt(foot)

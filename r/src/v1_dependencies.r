@@ -1,14 +1,20 @@
-Trajecfoot <- function(ident, part=NULL, timelabel=NULL, pathname="",foottimes=c(0,360),zlim=c(0,0),fluxweighting=NULL,coarse=1,dmassTF=T,
-                     vegpath="/deas/group/stilt/Vegetation/",numpix.x=376,numpix.y=324,lon.ll=-145,lat.ll=11,lon.res=1/4,lat.res=1/6,landcov="IGBP",wrfinput=NULL){
+Trajecfoot <- function(ident, part = NULL, timelabel = NULL, pathname = "",
+                       foottimes = c(0, 360), zlim = c(0, 0),
+                       fluxweighting = NULL, coarse = 1, dmassTF = T,
+                       vegpath = "/deas/group/stilt/Vegetation/", numpix.x = 376,
+                       numpix.y = 324, lon.ll = -145, lat.ll = 11, lon.res = 1/4,
+                       lat.res = 1/6, landcov = "IGBP", wrfinput = NULL){
   #Creates footprint for individual particle runs
   #footrpints are in units of ppm/(micro-moles/m2/s)
   #'ident' is character value specifying the trajectory ensemble to look at
   #'part' is the object containing particle run; if NULL, then determine from ident and pathname
-  #'timelabel' has format of "2002x08x03x10x"; will be used as timestamp for receptor; otherwise, take from 'ident'
+  #'timelabel' has format of "2002x08x03x10x"; will be used as timestamp for receptor;
+  #          otherwise, take from 'ident'
   #'pathname' is path where object with particle locations is saved
   #'foottimes' is vector of times between which footprint or influence will be integrated
-  #'zlim' (if not default 0,0): vertical interval over which particle distribution is integrated (partial column integrated particle density, or "volume influence")
-  #                             default (0,0): footprint calculation ("surface influence")
+  #'zlim' (if not default 0,0): vertical interval over which particle distribution is integrated
+  #          (partial column integrated particle density, or "volume influence")
+  #          default (0,0): footprint calculation ("surface influence")
   #'fluxweighting' if not NULL, but a number (1-31), weighting by that vegetation class;
   #                if not NULL, but a "CO" or "CO2" weighting by these emissions
   #'coarse' degrade resolution (for aggregation error): 0: only 20 km resolution;
@@ -31,20 +37,25 @@ Trajecfoot <- function(ident, part=NULL, timelabel=NULL, pathname="",foottimes=c
 
   #JCL:(04/19/2004) enable capability to directly pass on the object
   if(is.null(part)){   #when object wasn't passed on
+
     #Check if object exists
-    if(length(unix.shell(paste("if (-e ",pathname,".RData",ident,") echo 'found it!'; endif",sep=""),shell="/bin/csh"))>0){
+    if(length(unix.shell(paste("if (-e ",pathname,".RData",ident,") echo 'found it!'; endif",sep=""), shell="/bin/csh"))>0){
       print(paste("Trajecfoot(): starting with ident=",ident,sep="")) #found object
       part<-getr(ident,pathname) #get it
+
     }else{#if not there, break out of function, return NA's
       print(paste("Trajecfoot(): object=",pathname,".RData",ident," NOT FOUND",sep=""))
       return()
+
     } #if exists or not
   } #if(!is.null(part)){
 
   #check if required particle information is available
   rqdnames<-c("time","lat","lon","agl","zi","index","foot")
   if(dmassTF)rqdnames<-c(rqdnames,"dmass")
-  if(any(!(rqdnames%in%dimnames(part)[[2]]))){print(paste("not all columns available for this run, returning NA",sep=""));return(NA)}
+  if(any(!(rqdnames%in%dimnames(part)[[2]]))){
+    print(paste("not all columns available for this run, returning NA",sep=""));return(NA)
+  }
   if(!is.null(fluxweighting)){
     if(landcov=="IGBP") {
       veghead<-"veg."
@@ -62,7 +73,9 @@ Trajecfoot <- function(ident, part=NULL, timelabel=NULL, pathname="",foottimes=c
     }
     if(fluxweighting=="CO2"|fluxweighting=="CO"){
       if(is.null(timelabel)){ #if timestamp not passed on, then take from 'ident'
-        if(nchar(ident)!=34){stop("need timelabel or proper name (ident) including time stamp for weighting by emissions in Trajecfoot")}
+        if(nchar(ident)!=34){
+          stop("need timelabel or proper name (ident) including time stamp for weighting by emissions in Trajecfoot")
+        }
         pos<-id2pos(ident)
         time<-month.day.year(floor(pos[1]))
       }
@@ -75,7 +88,8 @@ Trajecfoot <- function(ident, part=NULL, timelabel=NULL, pathname="",foottimes=c
   } #if weighting by flux
 
   #get grid indices
-  #For horizontal grids (lower left corner of south-west gridcell: lat.ll, lon.ll; resolution: lon.res, lat.res, x is lon, y is lat)
+  #For horizontal grids (lower left corner of south-west gridcell: lat.ll, lon.ll;
+  # resolution: lon.res, lat.res, x is lon, y is lat)
   if(is.null(wrfinput)){
     #adapt for domain that crosses dateline
     if(lon.ll+numpix.x*lon.res>180)part[part[,"lon"]<0,"lon"]<-part[part[,"lon"]<0,"lon"]+360
@@ -95,8 +109,8 @@ Trajecfoot <- function(ident, part=NULL, timelabel=NULL, pathname="",foottimes=c
     dy     <- att.get.nc(nc,"NC_GLOBAL","DY")
     close.nc(nc)
 
-    projout<-paste("+proj=lcc +lat_1=",moadstandlat_1," +lat_2=",moadstandlat_2," +lat_0=",moadknownlat," +lon_0=",moadstandlon,sep="")
-    xy.corner<-project.nice(x.in=longx[1,1], y.in=latx[1,1],proj=projout,inv=FALSE,matTF=FALSE) #inv needs to be false for ll to xy
+    projout <- paste("+proj=lcc +lat_1=",moadstandlat_1," +lat_2=",moadstandlat_2," +lat_0=",moadknownlat," +lon_0=",moadstandlon,sep="")
+    xy.corner <- project.nice(x.in=longx[1,1], y.in=latx[1,1],proj=projout,inv=FALSE,matTF=FALSE) #inv needs to be false for ll to xy
     xy<-  project.nice(x.in=part[,"lon"], y.in=part[,"lat"],proj=projout,inv=FALSE,matTF=FALSE,matinTF=FALSE) #using staggered grids
     gitx<-floor((xy[[1]]-xy.corner[[1]])/dx+1)
     gity<-floor((xy[[2]]-xy.corner[[2]])/dy+1)
@@ -116,7 +130,8 @@ Trajecfoot <- function(ident, part=NULL, timelabel=NULL, pathname="",foottimes=c
     #remove particles with too strong dmass violation
     ind<-unique(part[part[,"dmass"]>1E3|part[,"dmass"]<1/1E3,"index"])
     if (length(ind) >= length(unique(part[, "index"]))/2){
-      message("Trajecvprm(): ", length(ind), ' of ', length(unique(part[, "index"])), ' particles have mass defect; returning NA')
+      message("Trajecvprm(): ", length(ind), ' of ', length(unique(part[, "index"])),
+        ' particles have mass defect; returning NA')
       return(NA)
     }
     part<-part[!part[,"index"]%in%ind,]
@@ -162,7 +177,8 @@ Trajecfoot <- function(ident, part=NULL, timelabel=NULL, pathname="",foottimes=c
   }
   if(zlim[2]>0){#want "volume" influence rather than surface influence
     #get residence time (i.e. time used for each time step), convert from hours to minutes
-    for(id in unique(part[,"index"]))part[part[,"index"]==id,"foot"]<-c(part[part[,"index"]==id,"btime"][1],diff(part[part[,"index"]==id,"btime"]))*60
+    for(id in unique(part[,"index"]))
+      part[part[,"index"]==id,"foot"]<-c(part[part[,"index"]==id,"btime"][1],diff(part[part[,"index"]==id,"btime"]))*60
     part<-part[part[,"agl"]>zlim[1]&part[,"agl"]<=zlim[2],]
   }
 
@@ -185,7 +201,6 @@ Trajecfoot <- function(ident, part=NULL, timelabel=NULL, pathname="",foottimes=c
     subpart<-part[(part[,"btime"]>(foottimes[foottimespos]))&(part[,"btime"]<=(foottimes[foottimespos+1])),,drop=FALSE]
 
     if(length(subpart)<=21)next
-
     subpart<-subpart[order(subpart[,"btime"],subpart[,"index"]),,drop=FALSE]
 
     if(!is.null(fluxweighting)){
@@ -273,7 +288,8 @@ Trajecfoot <- function(ident, part=NULL, timelabel=NULL, pathname="",foottimes=c
         #Take emission values at particle positions; multiply by "foot", i.e. sensitivity of mixing ratio changes to fluxes,
         #in ppm/(micro-mol/m^2/s)
         influence<-subpart[sel,"foot"]
-        #also multiplied by dmass (accumulated weight of particles due to mass violation, normalized by average dmass to conserve total mass over time)
+        #also multiplied by dmass (accumulated weight of particles due to mass violation,
+        # normalized by average dmass to conserve total mass over time)
         if(dmassTF)influence<-influence*subpart[sel,"dmass"]
 
         #USE CO EMISSION, TIME OF DAY AND DAY OF WEEK FACTOR AS WEIGHT
